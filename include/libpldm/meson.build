@@ -8,6 +8,7 @@ libpldm_headers += files(
   'firmware_update.h',
   'fru.h',
   'instance-id.h',
+  'pdr_data.h',
   'pdr.h',
   'platform.h',
   'pldm_types.h',
@@ -31,6 +32,7 @@ if get_option('oem-ibm').allowed()
     'oem/ibm/libpldm/fru_oem_ibm.h',
     'oem/ibm/libpldm/host.h',
     'oem/ibm/libpldm/platform_oem_ibm.h',
+    'oem/ibm/libpldm/pdr_oem_ibm.h',
     'oem/ibm/libpldm/state_set_oem_ibm.h'
   )
 endif
