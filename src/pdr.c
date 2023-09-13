@@ -422,11 +422,9 @@ uint32_t pldm_pdr_add_fru_record_set(pldm_pdr *repo, uint16_t terminus_handle,
 						   bmc_record_handle, false,
 						   prev_record_handle,
 						   fru->terminus_handle);
-
-	} else {
-		return pldm_pdr_add(repo, data, size, bmc_record_handle, false,
-				    fru->terminus_handle);
 	}
+	return pldm_pdr_add(repo, data, size, bmc_record_handle, false,
+			    fru->terminus_handle);
 }
 
 LIBPLDM_ABI_STABLE
@@ -508,9 +506,9 @@ uint32_t pldm_pdr_remove_fru_record_set_by_rsi(pldm_pdr *repo, uint16_t fru_rsi,
 				}
 				free(record);
 				break;
-			} else {
-				prev = record;
 			}
+			prev = record;
+
 		} else {
 			prev = record;
 		}
@@ -638,9 +636,9 @@ void pldm_delete_by_record_handle(pldm_pdr *repo, uint32_t record_handle,
 			repo->size -= record->size;
 			free(record);
 			break;
-		} else {
-			prev = record;
 		}
+		prev = record;
+
 		record = next;
 	}
 }
@@ -848,9 +846,9 @@ uint16_t pldm_delete_by_effecter_id(pldm_pdr *repo, uint16_t effecter_id,
 				}
 				free(record);
 				break;
-			} else {
-				prev = record;
 			}
+			prev = record;
+
 		} else {
 			prev = record;
 		}
@@ -896,9 +894,9 @@ uint16_t pldm_delete_by_sensor_id(pldm_pdr *repo, uint16_t sensor_id,
 				}
 				free(record);
 				break;
-			} else {
-				prev = record;
 			}
+			prev = record;
+
 		} else {
 			prev = record;
 		}
@@ -1683,7 +1681,8 @@ uint32_t pldm_entity_association_pdr_remove_contained_entity(
 				}
 				free(record);
 				break;
-			} else if (removed) {
+			}
+			if (removed) {
 				if (repo->first == record) {
 					repo->first = new_record;
 					new_record->next = record->next;
