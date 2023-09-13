@@ -1017,11 +1017,9 @@ pldm_entity_node *pldm_entity_association_tree_add(
 	uint8_t association_type, bool is_remote, bool is_update_container_id,
 	uint16_t container_id)
 {
-	return pldm_entity_association_tree_add_entity(tree, entity,
-						       entity_instance_number,
-						       parent, association_type,
-						       is_remote, is_update_container_id,
-						       container_id);
+	return pldm_entity_association_tree_add_entity(
+		tree, entity, entity_instance_number, parent, association_type,
+		is_remote, is_update_container_id, container_id);
 }
 
 LIBPLDM_ABI_TESTING
@@ -1634,8 +1632,8 @@ uint32_t pldm_entity_association_pdr_remove_contained_entity(
 			new_pdr->num_children =
 				pdr->num_children -
 				1; // if this becomes 0 then just delete. no new
-				// entity assoc pdr is needed PENDING. can test
-				// once pcie cards are placed under slots
+			// entity assoc pdr is needed PENDING. can test
+			// once pcie cards are placed under slots
 			struct pldm_entity *new_child =
 				(struct pldm_entity *)(&new_pdr->children[0]);
 
@@ -2147,7 +2145,8 @@ void entity_association_tree_find(pldm_entity_node *node, pldm_entity *entity,
 			return;
 		}
 	}
-	entity_association_tree_find(node->next_sibling, entity, out, is_remote);
+	entity_association_tree_find(node->next_sibling, entity, out,
+				     is_remote);
 	entity_association_tree_find(node->first_child, entity, out, is_remote);
 }
 
