@@ -263,6 +263,17 @@ uint32_t pldm_pdr_get_record_handle(const pldm_pdr *repo
 	return record->record_handle;
 }
 
+LIBPLDM_ABI_DEPRECATED
+uint16_t pldm_pdr_get_terminus_handle(const pldm_pdr *repo
+				      __attribute__((unused)),
+				      const pldm_pdr_record *record)
+{
+	assert(repo != NULL);
+	assert(record != NULL);
+
+	return record->terminus_handle;
+}
+
 LIBPLDM_ABI_STABLE
 bool pldm_pdr_record_is_remote(const pldm_pdr_record *record)
 {
@@ -864,7 +875,9 @@ static int entity_association_pdr_add_entry(pldm_entity_node *curr,
 		rc = entity_association_pdr_add_children(
 			curr, repo, physical_pdr_size, num_physical_children,
 			PLDM_ENTITY_ASSOCIAION_PHYSICAL, is_remote,
-			terminus_handle, record_handle);
+			terminus_handle,
+			((num_logical_children > 0) ? (record_handle + 1) :
+						      record_handle));
 		if (rc < 0) {
 			return rc;
 		}
@@ -1005,8 +1018,6 @@ void pldm_pdr_remove_pdrs_by_terminus_handle(pldm_pdr *repo,
 		return;
 	}
 
-	bool removed = false;
-
 	pldm_pdr_record *record = repo->first;
 	pldm_pdr_record *prev = NULL;
 	while (record != NULL) {
@@ -1026,26 +1037,10 @@ void pldm_pdr_remove_pdrs_by_terminus_handle(pldm_pdr *repo,
 			--repo->record_count;
 			repo->size -= record->size;
 			free(record);
-			removed = true;
 		} else {
 			prev = record;
 		}
 		record = next;
-	}
-
-	if (removed == true) {
-		record = repo->first;
-		uint32_t record_handle = 0;
-		while (record != NULL) {
-			record->record_handle = ++record_handle;
-			if (record->data != NULL) {
-				struct pldm_pdr_hdr *hdr =
-					(struct pldm_pdr_hdr *)(record->data);
-				hdr->record_handle =
-					htole32(record->record_handle);
-			}
-			record = record->next;
-		}
 	}
 }
 
