@@ -1073,7 +1073,7 @@ TEST(EntityAssociationPDR, testSpecialTrees)
     pldm_entity_association_tree_destroy(tree);
 }
 
-/*TEST(EntityAssociationPDR, testPDR)
+TEST(EntityAssociationPDR, testPDR)
 {
     // e = entity type, c = container id, i = instance num
 
@@ -1377,7 +1377,7 @@ TEST(EntityAssociationPDR, testSpecialTrees)
 
     pldm_pdr_destroy(repo);
     pldm_entity_association_tree_destroy(tree);
-}*/
+}
 
 TEST(EntityAssociationPDR, testFind)
 {
