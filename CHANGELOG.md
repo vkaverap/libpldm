@@ -20,6 +20,16 @@ Change categories:
 ### Added
 
 1. base: Define macros for reserved TIDs
+2. pdr: Add pldm_entity_association_pdr_add_contained_entity_to_remote_pdr()
+3. pdr: Add pldm_entity_association_pdr_create_new()
+4. platform: Define macros for the responded transferflags
+5. pdr: Add pldm_pdr_get_terminus_handle() API
+6. pdr: Add related decode_entity_auxiliary_names_pdr() APIs
+7. fw_update: Add encode req & decode resp for get_downstream_fw_params
+
+### Changed
+
+1. pdr: Stabilise related decode_entity_auxiliary_names_pdr() APIs
 
 ### Deprecated
 
@@ -37,6 +47,17 @@ Change categories:
    ```
 
 [coccinelle]: https://coccinelle.gitlabpages.inria.fr/website/
+
+### Removed
+
+1. IBM OEM header compatibility symlinks.
+
+   Anyone left using the deprecated paths can migrate using the coccinelle patch
+   at `evolutions/current/oem-ibm-header-compat.cocci`.
+
+### Fixed
+
+1. requester: instance-id: Release read lock on conflict
 
 ## [0.8.0] - 2024-05-23
 

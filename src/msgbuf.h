@@ -52,6 +52,7 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
+#include <uchar.h>
 
 /*
  * We can't use static_assert() outside of some other C construct. Deal
@@ -723,7 +724,8 @@ pldm__msgbuf_extract_real32(struct pldm_msgbuf *ctx, void *dst)
 		real32_t *: pldm__msgbuf_extract_real32)(ctx, dst)
 
 __attribute__((always_inline)) static inline int
-pldm_msgbuf_extract_array_uint8(struct pldm_msgbuf *ctx, uint8_t *dst,
+// NOLINTNEXTLINE(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+pldm__msgbuf_extract_array_void(struct pldm_msgbuf *ctx, void *dst,
 				size_t count)
 {
 	assert(ctx);
@@ -757,9 +759,23 @@ pldm_msgbuf_extract_array_uint8(struct pldm_msgbuf *ctx, uint8_t *dst,
 	return 0;
 }
 
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_extract_array_char(struct pldm_msgbuf *ctx, char *dst, size_t count)
+{
+	return pldm__msgbuf_extract_array_void(ctx, dst, count);
+}
+
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_extract_array_uint8(struct pldm_msgbuf *ctx, uint8_t *dst,
+				size_t count)
+{
+	return pldm__msgbuf_extract_array_void(ctx, dst, count);
+}
+
 #define pldm_msgbuf_extract_array(ctx, dst, count)                             \
-	_Generic((*(dst)), uint8_t: pldm_msgbuf_extract_array_uint8)(ctx, dst, \
-								     count)
+	_Generic((*(dst)),                                                     \
+		uint8_t: pldm_msgbuf_extract_array_uint8,                      \
+		char: pldm_msgbuf_extract_array_char)(ctx, dst, count)
 
 __attribute__((always_inline)) static inline int
 pldm_msgbuf_insert_uint32(struct pldm_msgbuf *ctx, const uint32_t src)
@@ -953,7 +969,8 @@ pldm_msgbuf_insert_int8(struct pldm_msgbuf *ctx, const int8_t src)
 		int32_t: pldm_msgbuf_insert_int32)(dst, src)
 
 __attribute__((always_inline)) static inline int
-pldm_msgbuf_insert_array_uint8(struct pldm_msgbuf *ctx, const uint8_t *src,
+// NOLINTNEXTLINE(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+pldm__msgbuf_insert_array_void(struct pldm_msgbuf *ctx, const void *src,
 			       size_t count)
 {
 	assert(ctx);
@@ -987,9 +1004,24 @@ pldm_msgbuf_insert_array_uint8(struct pldm_msgbuf *ctx, const uint8_t *src,
 	return 0;
 }
 
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_insert_array_char(struct pldm_msgbuf *ctx, const char *src,
+			      size_t count)
+{
+	return pldm__msgbuf_insert_array_void(ctx, src, count);
+}
+
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_insert_array_uint8(struct pldm_msgbuf *ctx, const uint8_t *src,
+			       size_t count)
+{
+	return pldm__msgbuf_insert_array_void(ctx, src, count);
+}
+
 #define pldm_msgbuf_insert_array(dst, src, count)                              \
-	_Generic((*(src)), uint8_t: pldm_msgbuf_insert_array_uint8)(dst, src,  \
-								    count)
+	_Generic((*(src)),                                                     \
+		uint8_t: pldm_msgbuf_insert_array_uint8,                       \
+		char: pldm_msgbuf_insert_array_char)(dst, src, count)
 
 __attribute__((always_inline)) static inline int
 pldm_msgbuf_span_required(struct pldm_msgbuf *ctx, size_t required,
@@ -1018,6 +1050,142 @@ pldm_msgbuf_span_required(struct pldm_msgbuf *ctx, size_t required,
 
 	*cursor = ctx->cursor;
 	ctx->cursor += required;
+
+	return 0;
+}
+
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_span_string_ascii(struct pldm_msgbuf *ctx, void **cursor,
+			      size_t *length)
+{
+	intmax_t measured;
+
+	assert(ctx);
+
+	if (!ctx->cursor || (cursor && *cursor)) {
+		return pldm_msgbuf_status(ctx, EINVAL);
+	}
+
+	if (ctx->remaining < 0) {
+		/* Tracking the amount of overflow gets disturbed here */
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	measured = (intmax_t)strnlen((const char *)ctx->cursor, ctx->remaining);
+	if (measured == ctx->remaining) {
+		/*
+		 * We have hit the end of the buffer prior to the NUL terminator.
+		 * Optimistically, the NUL terminator was one-beyond-the-end. Setting
+		 * ctx->remaining negative ensures the `pldm_msgbuf_destroy*()` APIs also
+		 * return an error.
+		 */
+		ctx->remaining = -1;
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	/* Include the NUL terminator in the span length, as spans are opaque */
+	measured++;
+
+	if (ctx->remaining < INTMAX_MIN + measured) {
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	ctx->remaining -= measured;
+	assert(ctx->remaining >= 0);
+	if (ctx->remaining < 0) {
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	if (cursor) {
+		*cursor = ctx->cursor;
+	}
+
+	ctx->cursor += measured;
+
+	if (length) {
+		*length = measured;
+	}
+
+	return 0;
+}
+
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_span_string_utf16(struct pldm_msgbuf *ctx, void **cursor,
+			      size_t *length)
+{
+	static const char16_t term = 0;
+	ptrdiff_t measured;
+	void *end;
+
+	assert(ctx);
+
+	if (!ctx->cursor || (cursor && *cursor)) {
+		return pldm_msgbuf_status(ctx, EINVAL);
+	}
+
+	if (ctx->remaining < 0) {
+		/* Tracking the amount of overflow gets disturbed here */
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	/*
+	 * Avoid tripping up on UTF16-LE: We may have consecutive NUL _bytes_ that do
+	 * not form a UTF16 NUL _code-point_ due to alignment with respect to the
+	 * start of the string
+	 */
+	end = ctx->cursor;
+	do {
+		if (end != ctx->cursor) {
+			/*
+			 * If we've looped we've found a relatively-unaligned NUL code-point.
+			 * Scan again from a relatively-aligned start point.
+			 */
+			end = (char *)end + 1;
+		}
+		measured = (char *)end - (char *)ctx->cursor;
+		end = memmem(end, ctx->remaining - measured, &term,
+			     sizeof(term));
+	} while (end && ((uintptr_t)end & 1) != ((uintptr_t)ctx->cursor & 1));
+
+	if (!end) {
+		/*
+		 * Optimistically, the last required pattern byte was one beyond the end of
+		 * the buffer. Setting ctx->remaining negative ensures the
+		 * `pldm_msgbuf_destroy*()` APIs also return an error.
+		 */
+		ctx->remaining = -1;
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	end = (char *)end + sizeof(char16_t);
+	measured = (char *)end - (char *)ctx->cursor;
+
+#if INTMAX_MAX < PTRDIFF_MAX
+	if (measured >= INTMAX_MAX) {
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+#endif
+
+	if (ctx->remaining < INTMAX_MIN + (intmax_t)measured) {
+		assert(ctx->remaining < 0);
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	ctx->remaining -= (intmax_t)measured;
+	assert(ctx->remaining >= 0);
+	if (ctx->remaining < 0) {
+		return pldm_msgbuf_status(ctx, EOVERFLOW);
+	}
+
+	if (cursor) {
+		*cursor = ctx->cursor;
+	}
+
+	ctx->cursor += measured;
+
+	if (length) {
+		*length = (size_t)measured;
+	}
 
 	return 0;
 }
@@ -1102,6 +1270,36 @@ pldm__msgbuf_copy(struct pldm_msgbuf *dst, struct pldm_msgbuf *src, size_t size,
 	dst->cursor += size;
 
 	return 0;
+}
+
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_copy_string_ascii(struct pldm_msgbuf *dst, struct pldm_msgbuf *src)
+{
+	void *ascii = NULL;
+	size_t len = 0;
+	int rc;
+
+	rc = pldm_msgbuf_span_string_ascii(src, &ascii, &len);
+	if (rc < 0) {
+		return rc;
+	}
+
+	return pldm__msgbuf_insert_array_void(dst, ascii, len);
+}
+
+__attribute__((always_inline)) static inline int
+pldm_msgbuf_copy_string_utf16(struct pldm_msgbuf *dst, struct pldm_msgbuf *src)
+{
+	void *utf16 = NULL;
+	size_t len = 0;
+	int rc;
+
+	rc = pldm_msgbuf_span_string_utf16(src, &utf16, &len);
+	if (rc < 0) {
+		return rc;
+	}
+
+	return pldm__msgbuf_insert_array_void(dst, utf16, len);
 }
 
 #ifdef __cplusplus

@@ -26,12 +26,32 @@
 
 [azonenberg-packed-struct]: https://ioc.exchange/@azonenberg/112535511250395148
 
+- [The Good, the Bad, and the Weird - Trail of Bits
+  Blog][trail-of-bits-weird-machines]
+
+[trail-of-bits-weird-machines]:
+  https://blog.trailofbits.com/2018/10/26/the-good-the-bad-and-the-weird/
+
+- [Logic for Programmers - Hillel Wayne][logic-for-programmers]
+
+[logic-for-programmers]: https://leanpub.com/logic
+
+- [Parse, don’t validate][alexis-king-parse-dont-validate]
+
+[alexis-king-parse-dont-validate]:
+  https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
+
 ## References
 
 - [C17 draft standard][c17-draft-standard]
 
 [c17-draft-standard]:
   https://web.archive.org/web/20181230041359if_/http://www.open-std.org/jtc1/sc22/wg14/www/abq/c17_updated_proposed_fdis.pdf
+
+- [SEI CERT C Coding Standard][sei-cert-c-coding-standard]
+
+[sei-cert-c-coding-standard]:
+  https://wiki.sei.cmu.edu/confluence/display/c/SEI+CERT+C+Coding+Standard
 
 ## Definitions
 
@@ -169,6 +189,9 @@ Each of the following must succeed:
 - [ ] If the function is marked `LIBPLDM_ABI_STABLE`, then I have changed the
       annotation to `LIBPLDM_ABI_DEPRECATED` and left it in-place.
 
+  - [ ] I have updated the ABI dump, or will mark the change as WIP until it has
+        been.
+
 - [ ] If the function is marked `LIBPLDM_ABI_DEPRECATED`, then I have removed it
       only after satisfying myself that each of the following is true:
 
@@ -197,6 +220,9 @@ actions:
       name to the new name
 
 [coccinelle]: https://coccinelle.gitlabpages.inria.fr/website/
+
+- [ ] I've updated the ABI dump to capture the rename, or will mark the change
+      as WIP until it has been.
 
 ## Testing my changes
 
