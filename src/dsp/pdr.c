@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later */
+#include "compiler.h"
 #include "msgbuf.h"
 #include <libpldm/pdr.h>
 #include <libpldm/platform.h>
@@ -42,9 +43,9 @@ static inline uint32_t get_next_record_handle(const pldm_pdr *repo,
 }
 
 LIBPLDM_ABI_STABLE
-int pldm_pdr_add_check(pldm_pdr *repo, const uint8_t *data, uint32_t size,
-		       bool is_remote, uint16_t terminus_handle,
-		       uint32_t *record_handle)
+int pldm_pdr_add(pldm_pdr *repo, const uint8_t *data, uint32_t size,
+		 bool is_remote, uint16_t terminus_handle,
+		 uint32_t *record_handle)
 {
 	uint32_t curr;
 
@@ -253,8 +254,7 @@ uint32_t pldm_pdr_get_repo_size(const pldm_pdr *repo)
 }
 
 LIBPLDM_ABI_STABLE
-uint32_t pldm_pdr_get_record_handle(const pldm_pdr *repo
-				    __attribute__((unused)),
+uint32_t pldm_pdr_get_record_handle(const pldm_pdr *repo LIBPLDM_CC_UNUSED,
 				    const pldm_pdr_record *record)
 {
 	assert(repo != NULL);
@@ -264,8 +264,7 @@ uint32_t pldm_pdr_get_record_handle(const pldm_pdr *repo
 }
 
 LIBPLDM_ABI_TESTING
-uint16_t pldm_pdr_get_terminus_handle(const pldm_pdr *repo
-				      __attribute__((unused)),
+uint16_t pldm_pdr_get_terminus_handle(const pldm_pdr *repo LIBPLDM_CC_UNUSED,
 				      const pldm_pdr_record *record)
 {
 	assert(repo != NULL);
@@ -283,11 +282,11 @@ bool pldm_pdr_record_is_remote(const pldm_pdr_record *record)
 }
 
 LIBPLDM_ABI_STABLE
-int pldm_pdr_add_fru_record_set_check(pldm_pdr *repo, uint16_t terminus_handle,
-				      uint16_t fru_rsi, uint16_t entity_type,
-				      uint16_t entity_instance_num,
-				      uint16_t container_id,
-				      uint32_t *bmc_record_handle)
+int pldm_pdr_add_fru_record_set(pldm_pdr *repo, uint16_t terminus_handle,
+				uint16_t fru_rsi, uint16_t entity_type,
+				uint16_t entity_instance_num,
+				uint16_t container_id,
+				uint32_t *bmc_record_handle)
 {
 	if (!repo || !bmc_record_handle) {
 		return -EINVAL;
@@ -312,8 +311,8 @@ int pldm_pdr_add_fru_record_set_check(pldm_pdr *repo, uint16_t terminus_handle,
 	fru->entity_instance_num = htole16(entity_instance_num);
 	fru->container_id = htole16(container_id);
 
-	return pldm_pdr_add_check(repo, data, size, false, terminus_handle,
-				  bmc_record_handle);
+	return pldm_pdr_add(repo, data, size, false, terminus_handle,
+			    bmc_record_handle);
 }
 
 LIBPLDM_ABI_STABLE
@@ -836,8 +835,8 @@ static int entity_association_pdr_add_children(
 		node = node->next_sibling;
 	}
 
-	return pldm_pdr_add_check(repo, pdr, size, is_remote, terminus_handle,
-				  &record_handle);
+	return pldm_pdr_add(repo, pdr, size, is_remote, terminus_handle,
+			    &record_handle);
 }
 
 static int entity_association_pdr_add_entry(pldm_entity_node *curr,
@@ -933,9 +932,9 @@ static int entity_association_pdr_add(pldm_entity_node *curr, pldm_pdr *repo,
 }
 
 LIBPLDM_ABI_STABLE
-int pldm_entity_association_pdr_add_check(pldm_entity_association_tree *tree,
-					  pldm_pdr *repo, bool is_remote,
-					  uint16_t terminus_handle)
+int pldm_entity_association_pdr_add(pldm_entity_association_tree *tree,
+				    pldm_pdr *repo, bool is_remote,
+				    uint16_t terminus_handle)
 {
 	if (!tree || !repo) {
 		return 0;
@@ -946,7 +945,7 @@ int pldm_entity_association_pdr_add_check(pldm_entity_association_tree *tree,
 }
 
 LIBPLDM_ABI_STABLE
-int pldm_entity_association_pdr_add_from_node_check(
+int pldm_entity_association_pdr_add_from_node(
 	pldm_entity_node *node, pldm_pdr *repo, pldm_entity **entities,
 	size_t num_entities, bool is_remote, uint16_t terminus_handle)
 {
@@ -1276,7 +1275,7 @@ void pldm_entity_association_pdr_extract(const uint8_t *pdr, uint16_t pdr_len,
 	}
 
 	const uint8_t *start = (uint8_t *)pdr;
-	const uint8_t *end __attribute__((unused)) =
+	const uint8_t *end LIBPLDM_CC_UNUSED =
 		start + sizeof(struct pldm_pdr_hdr) + le16toh(hdr->length);
 	start += sizeof(struct pldm_pdr_hdr);
 	struct pldm_pdr_entity_association *entity_association_pdr =
