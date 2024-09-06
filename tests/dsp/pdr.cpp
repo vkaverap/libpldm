@@ -445,9 +445,8 @@ TEST(FindContainerID, testValidInstanceID)
     pdr->num_children = 1;
     pdr->children[0].entity_container_id = 42;
 
-    uint32_t record_handle;
-    int rc =
-        pldm_pdr_add_check(repo, data.get(), size, false, 0, &record_handle);
+    uint32_t record_handle = 0;
+    int rc = pldm_pdr_add(repo, data.get(), size, false, 0, &record_handle);
     ASSERT_EQ(rc, 0);
 
     uint16_t result = pldm_find_container_id(repo, 1, 2);
@@ -479,9 +478,8 @@ TEST(FindContainerID, testInvalidInstanceID)
     pdr->num_children = 1;
     pdr->children[0].entity_container_id = 42;
 
-    uint32_t record_handle;
-    int rc =
-        pldm_pdr_add_check(repo, data.get(), size, false, 0, &record_handle);
+    uint32_t record_handle = 0;
+    int rc = pldm_pdr_add(repo, data.get(), size, false, 0, &record_handle);
     ASSERT_EQ(rc, 0);
 
     uint16_t result = pldm_find_container_id(repo, 3, 4);
@@ -509,8 +507,8 @@ TEST(UpdateContainerID, testUpdatedContainerId)
     pdr->effecter_id = 3;
 
     uint32_t record_handle = 1;
-    int rc = pldm_pdr_add_check(repo, data.data(), pdr_size, false, 1,
-                                &record_handle);
+    int rc =
+        pldm_pdr_add(repo, data.data(), pdr_size, false, 1, &record_handle);
     ASSERT_EQ(rc, 0);
     EXPECT_EQ(pldm_pdr_get_record_count(repo), 1u);
 
@@ -598,7 +596,7 @@ TEST(PDRAccess, getPLDMEntityfromPDR)
 
     // Test FRU Record set PDR
     uint32_t handle = 0;
-    int rc = pldm_pdr_add_fru_record_set_check(repo, 1, 10, 1, 0, 100, &handle);
+    int rc = pldm_pdr_add_fru_record_set(repo, 1, 10, 1, 0, 100, &handle);
 
     ASSERT_EQ(rc, 0);
     auto entity = pldm_get_entity_from_record_handle(repo, handle);
@@ -611,7 +609,7 @@ TEST(PDRAccess, getPLDMEntityfromPDR)
                                  1,   0, 196, 0, 64, 0,  1, 0, 2,  0,
                                  0,   0, 0,   0, 1,  10, 0, 1, 6};
     handle = 0;
-    rc = pldm_pdr_add_check(repo, data.data(), data.size(), false, 1, &handle);
+    rc = pldm_pdr_add(repo, data.data(), data.size(), false, 1, &handle);
     ASSERT_EQ(rc, 0);
     entity = pldm_get_entity_from_record_handle(repo, handle);
     EXPECT_EQ(entity.entity_type, htole16(64));
@@ -623,8 +621,7 @@ TEST(PDRAccess, getPLDMEntityfromPDR)
                                   0,  1, 0, 199, 0, 120, 0, 4, 0,
                                   5,  0, 0, 0,   1, 10,  0, 1, 6};
     handle = 0;
-    rc =
-        pldm_pdr_add_check(repo, data2.data(), data2.size(), false, 1, &handle);
+    rc = pldm_pdr_add(repo, data2.data(), data2.size(), false, 1, &handle);
     ASSERT_EQ(rc, 0);
     entity = pldm_get_entity_from_record_handle(repo, handle);
     EXPECT_EQ(entity.entity_type, htole16(120));
@@ -635,8 +632,7 @@ TEST(PDRAccess, getPLDMEntityfromPDR)
     std::array<uint8_t, 27> data3{10, 1, 0, 0, 1, 9, 0, 0, 17, 0,  1, 0, 199, 0,
                                   6,  0, 3, 0, 2, 0, 0, 0, 1,  10, 0, 1, 6};
     handle = 0;
-    rc =
-        pldm_pdr_add_check(repo, data3.data(), data3.size(), false, 1, &handle);
+    rc = pldm_pdr_add(repo, data3.data(), data3.size(), false, 1, &handle);
     ASSERT_EQ(rc, 0);
     entity = pldm_get_entity_from_record_handle(repo, handle);
     EXPECT_EQ(entity.entity_type, htole16(6));
@@ -652,8 +648,7 @@ TEST(PDRAccess, getPLDMEntityfromPDR)
         pldm_pdr_hdr* hdr = reinterpret_cast<pldm_pdr_hdr*>(data4.data());
         hdr->type = type;
         handle = 0;
-        rc = pldm_pdr_add_check(repo, data4.data(), data4.size(), false, 1,
-                                &handle);
+        rc = pldm_pdr_add(repo, data4.data(), data4.size(), false, 1, &handle);
         ASSERT_EQ(rc, 0);
         entity = pldm_get_entity_from_record_handle(repo, handle);
         EXPECT_EQ(entity.entity_type, htole16(0));
@@ -822,20 +817,20 @@ TEST(PDRAccess, testGetTerminusHandle)
 
     hdr.type = 1;
     uint16_t firstTerminusHandle = 1;
-    EXPECT_EQ(pldm_pdr_add_check(repo, reinterpret_cast<const uint8_t*>(&hdr),
-                                 sizeof(hdr), false, firstTerminusHandle, NULL),
+    EXPECT_EQ(pldm_pdr_add(repo, reinterpret_cast<const uint8_t*>(&hdr),
+                           sizeof(hdr), false, firstTerminusHandle, NULL),
               0);
 
     hdr.type = 2;
     uint16_t secondTerminusHandle = 2;
-    EXPECT_EQ(pldm_pdr_add_check(repo, reinterpret_cast<const uint8_t*>(&hdr),
-                                 sizeof(hdr), true, secondTerminusHandle, NULL),
+    EXPECT_EQ(pldm_pdr_add(repo, reinterpret_cast<const uint8_t*>(&hdr),
+                           sizeof(hdr), true, secondTerminusHandle, NULL),
               0);
 
     hdr.type = 3;
     uint16_t thirdTerminusHandle = 3;
-    EXPECT_EQ(pldm_pdr_add_check(repo, reinterpret_cast<const uint8_t*>(&hdr),
-                                 sizeof(hdr), true, thirdTerminusHandle, NULL),
+    EXPECT_EQ(pldm_pdr_add(repo, reinterpret_cast<const uint8_t*>(&hdr),
+                           sizeof(hdr), true, thirdTerminusHandle, NULL),
               0);
 
     uint8_t* outData = nullptr;
@@ -2273,7 +2268,7 @@ TEST(EntityAssociationPDR, testfindParentEntityPresent)
 
     uint32_t handle = 3;
     auto repo = pldm_pdr_init();
-    pldm_pdr_add_check(repo, pdr.data(), pdr.size(), false, 1, &handle);
+    pldm_pdr_add(repo, pdr.data(), pdr.size(), false, 1, &handle);
     EXPECT_EQ(pldm_pdr_get_record_count(repo), 1u);
 
     uint32_t found_record_handle{};
@@ -2306,17 +2301,14 @@ TEST(PDRUpdate, testRemoveFruRecord)
 {
     auto repo = pldm_pdr_init();
     uint32_t record_handle = 1;
-    EXPECT_EQ(pldm_pdr_add_fru_record_set_check(repo, 1, 1, 1, 0, 100,
-                                                &record_handle),
-              0);
+    EXPECT_EQ(
+        pldm_pdr_add_fru_record_set(repo, 1, 1, 1, 0, 100, &record_handle), 0);
     record_handle = 2;
-    EXPECT_EQ(pldm_pdr_add_fru_record_set_check(repo, 1, 2, 1, 1, 100,
-                                                &record_handle),
-              0);
+    EXPECT_EQ(
+        pldm_pdr_add_fru_record_set(repo, 1, 2, 1, 1, 100, &record_handle), 0);
     record_handle = 3;
-    EXPECT_EQ(pldm_pdr_add_fru_record_set_check(repo, 1, 3, 1, 2, 100,
-                                                &record_handle),
-              0);
+    EXPECT_EQ(
+        pldm_pdr_add_fru_record_set(repo, 1, 3, 1, 2, 100, &record_handle), 0);
     EXPECT_EQ(pldm_pdr_get_record_count(repo), 3);
     uint32_t removed_record_handle{};
     EXPECT_EQ(pldm_pdr_remove_fru_record_set_by_rsi(repo, 2, false,
