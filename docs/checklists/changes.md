@@ -36,7 +36,7 @@
 
 [logic-for-programmers]: https://leanpub.com/logic
 
-- [Parse, don’t validate][alexis-king-parse-dont-validate]
+- [Parse, don’t validate - Alexis King][alexis-king-parse-dont-validate]
 
 [alexis-king-parse-dont-validate]:
   https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
@@ -52,6 +52,12 @@
 
 [sei-cert-c-coding-standard]:
   https://wiki.sei.cmu.edu/confluence/display/c/SEI+CERT+C+Coding+Standard
+
+- [Common Weakness Enumeration (CWE) - Software
+  Development][common-weakness-enumeration-sw]
+
+[common-weakness-enumeration-sw]:
+  https://cwe.mitre.org/data/definitions/699.html
 
 ## Definitions
 
@@ -88,6 +94,18 @@
 
 ## Adding a new API
 
+- [ ] My new public message codec functions take a `struct` representing the
+      message as a parameter
+
+  - Function prototypes must _not_ decompose the message to individual
+    parameters. This approach is not ergonomic and is difficult to make
+    type-safe. This is especially true for message decoding functions which must
+    use pointers for out-parameters, where it has often become ambiguous whether
+    the underlying memory represents a single object or an array.
+
+- [ ] Each new `struct` I've defined is used in at least one new function I've
+      added to the public API.
+
 - [ ] My new public `struct` definitions are _not_ marked
       `__attribute__((packed))`
 
@@ -105,6 +123,8 @@
     - Note: Any array defined with length 1 is _not_ a flexible array, and any
       access beyond the first element invokes undefined behaviour in both C and
       C++.
+
+  - [ ] I've annotated the flexible array member with `LIBPLDM_CC_COUNTED_BY()`
 
 [^1]:
     [C17 draft specification][c17-draft-standard], 6.7.2.1 Structure and union

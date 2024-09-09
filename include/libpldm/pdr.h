@@ -76,6 +76,9 @@ uint32_t pldm_pdr_get_repo_size(const pldm_pdr *repo);
  *  @return 0 on success, -EINVAL if the arguments are invalid, -ENOMEM if an internal memory
  *  allocation fails, or -EOVERFLOW if a record handle could not be allocated
  */
+int pldm_pdr_add(pldm_pdr *repo, const uint8_t *data, uint32_t size,
+		 bool is_remote, uint16_t terminus_handle,
+		 uint32_t *record_handle);
 int pldm_pdr_add_check(pldm_pdr *repo, const uint8_t *data, uint32_t size,
 		       bool is_remote, uint16_t terminus_handle,
 		       uint32_t *record_handle);
@@ -255,6 +258,11 @@ int pldm_pdr_find_child_container_id_index_range_exclude(
  *  @return 0 on success, -EINVAL if the arguments are invalid, or -ENOMEM if an internal allocation
  *  	    fails.
  */
+int pldm_pdr_add_fru_record_set(pldm_pdr *repo, uint16_t terminus_handle,
+				uint16_t fru_rsi, uint16_t entity_type,
+				uint16_t entity_instance_num,
+				uint16_t container_id,
+				uint32_t *bmc_record_handle);
 int pldm_pdr_add_fru_record_set_check(pldm_pdr *repo, uint16_t terminus_handle,
 				      uint16_t fru_rsi, uint16_t entity_type,
 				      uint16_t entity_instance_num,
@@ -434,19 +442,6 @@ pldm_entity pldm_entity_get_parent(pldm_entity_node *node);
  */
 bool pldm_entity_is_exist_parent(pldm_entity_node *node);
 
-/** @brief Convert entity association tree to PDR
- *
- *  No conversion takes place if one or both of tree or repo are NULL.
- *
- *  @param[in] tree - opaque pointer to entity association tree
- *  @param[in] repo - PDR repo where entity association records should be added
- *  @param[in] is_remote - if true, then the PDR is not from this terminus
- *  @param[in] terminus_handle - terminus handle of the terminus
- */
-void pldm_entity_association_pdr_add(pldm_entity_association_tree *tree,
-				     pldm_pdr *repo, bool is_remote,
-				     uint16_t terminus_handle);
-
 /** @brief Convert entity association tree to PDR, or return an error
  *
  *  No conversion takes place if one or both of tree or repo are NULL.
@@ -461,6 +456,9 @@ void pldm_entity_association_pdr_add(pldm_entity_association_tree *tree,
  *  @return 0 on success, -EINVAL if the arguments are invalid, -ENOMEM if an internal memory
  *  allocation fails, or -EOVERFLOW if a record handle could not be allocated
  */
+int pldm_entity_association_pdr_add(pldm_entity_association_tree *tree,
+				    pldm_pdr *repo, bool is_remote,
+				    uint16_t terminus_handle);
 int pldm_entity_association_pdr_add_check(pldm_entity_association_tree *tree,
 					  pldm_pdr *repo, bool is_remote,
 					  uint16_t terminus_handle);
@@ -510,6 +508,9 @@ int pldm_entity_association_pdr_create_new(pldm_pdr *repo,
  *
  *  @return 0 on success, -EINVAL if the provided arguments are invalid.
  */
+int pldm_entity_association_pdr_add_from_node(
+	pldm_entity_node *node, pldm_pdr *repo, pldm_entity **entities,
+	size_t num_entities, bool is_remote, uint16_t terminus_handle);
 int pldm_entity_association_pdr_add_from_node_check(
 	pldm_entity_node *node, pldm_pdr *repo, pldm_entity **entities,
 	size_t num_entities, bool is_remote, uint16_t terminus_handle);

@@ -26,27 +26,73 @@ Change categories:
 5. pdr: Add pldm_pdr_get_terminus_handle() API
 6. pdr: Add related decode_entity_auxiliary_names_pdr() APIs
 7. fw_update: Add encode req & decode resp for get_downstream_fw_params
+8. platform: Add decode_pldm_platform_cper_event() API
+9. decode_get_pdr_repository_info_resp_safe()
+
+   Replaces decode_get_pdr_repository_info_resp() as discussed in the
+   `Deprecated` section below
+
+10. decode_get_pdr_resp_safe()
+
+    Replaces decode_get_pdr_resp() as discussed in the `Deprecated` section
+    below
 
 ### Changed
 
 1. pdr: Stabilise related decode_entity_auxiliary_names_pdr() APIs
+2. platform: Rework decode/encode_pldm_message_poll_event_data() APIs
+3. platform: Stabilise decode_pldm_message_poll_event_data() APIs
+4. ABI break for decode_sensor_op_data()
+
+   Applying LIBPLDM_CC_NONNULL to the internal msgbuf APIs caused
+   abi-compliance-checker to flag a change in the register containing the
+   parameter `previous_op_state`.
+
+5. platform: Stabilise decode_pldm_platform_cper_event() API
 
 ### Deprecated
 
-1. fru: Deprecate `get_fru_record_by_option_check()`
+1. Rename and deprecate functions with the `_check` suffix
 
-   Users should switch to `get_fru_record_by_option()`. Migration can be
-   performed using the [Coccinelle semantic patch][coccinelle]
-   `get_fru_record_by_option_check.cocci`:
+   All library function return values always need to be checked. The `_check`
+   suffix is redundant, so remove it. Migration to the non-deprecated
+   equivalents without the `_check` suffix can be performed using
+   `scripts/ apply-renames` and the [clang-rename][] configurations under
+   `evolutions/`
 
-   ```
-   $ spatch \
-      --sp-file=${LIBPLDM_DIR}/evolutions/current/get_fru_record_by_option_check.cocci \
-      --in-place \
-      $(git ls-files | grep -E '\.[ch](pp)?')
-   ```
+   The deprecated functions:
 
-[coccinelle]: https://coccinelle.gitlabpages.inria.fr/website/
+   - `get_fru_record_by_option_check()`
+   - `pldm_bios_table_append_pad_checksum_check()`
+   - `pldm_bios_table_attr_entry_enum_decode_def_num_check()`
+   - `pldm_bios_table_attr_entry_enum_decode_pv_hdls_check()`
+   - `pldm_bios_table_attr_entry_enum_decode_pv_num_check()`
+   - `pldm_bios_table_attr_entry_enum_encode_check()`
+   - `pldm_bios_table_attr_entry_integer_encode_check()`
+   - `pldm_bios_table_attr_entry_string_decode_def_string_length_check()`
+   - `pldm_bios_table_attr_entry_string_encode_check()`
+   - `pldm_bios_table_attr_value_entry_encode_enum_check()`
+   - `pldm_bios_table_attr_value_entry_encode_integer_check()`
+   - `pldm_bios_table_attr_value_entry_encode_string_check()`
+   - `pldm_bios_table_string_entry_decode_string_check()`
+   - `pldm_bios_table_string_entry_encode_check()`
+   - `pldm_entity_association_pdr_add_check()`
+   - `pldm_entity_association_pdr_add_from_node_check()`
+   - `pldm_pdr_add_check()`
+   - `pldm_pdr_add_fru_record_set_check()`
+
+[clang-rename]: https://clang.llvm.org/extra/clang-rename.html
+
+2. `decode_get_pdr_repository_info_resp()`
+
+   Users should move to `decode_get_pdr_repository_info_resp_safe()` which
+   eliminates the opportunity for buffer overruns when extracting objects from
+   the message.
+
+3. `decode_get_pdr_resp()`
+
+   Users should move to `decode_get_pdr_resp_safe()` which reduces the
+   invocation tedium and improves memory safety over `decode_get_pdr_resp()`.
 
 ### Removed
 
@@ -409,7 +455,7 @@ Change categories:
    CI purposes. `oem-ibm` is still disabled by default in the `libpldm` bitbake
    recipe:
 
-   https://github.com/openbmc/openbmc/blob/master/meta-phosphor/recipes-phosphor/libpldm/libpldm_git.bb#L10
+   <https://github.com/openbmc/openbmc/blob/master/meta-phosphor/recipes-phosphor/libpldm/libpldm_git.bb#L10>
 
    To disable `oem-ibm` in your development builds, pass `-Doem-ibm=disabled`
    when invoking `meson setup`
