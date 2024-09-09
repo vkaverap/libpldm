@@ -26,12 +26,38 @@
 
 [azonenberg-packed-struct]: https://ioc.exchange/@azonenberg/112535511250395148
 
+- [The Good, the Bad, and the Weird - Trail of Bits
+  Blog][trail-of-bits-weird-machines]
+
+[trail-of-bits-weird-machines]:
+  https://blog.trailofbits.com/2018/10/26/the-good-the-bad-and-the-weird/
+
+- [Logic for Programmers - Hillel Wayne][logic-for-programmers]
+
+[logic-for-programmers]: https://leanpub.com/logic
+
+- [Parse, don’t validate - Alexis King][alexis-king-parse-dont-validate]
+
+[alexis-king-parse-dont-validate]:
+  https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
+
 ## References
 
 - [C17 draft standard][c17-draft-standard]
 
 [c17-draft-standard]:
   https://web.archive.org/web/20181230041359if_/http://www.open-std.org/jtc1/sc22/wg14/www/abq/c17_updated_proposed_fdis.pdf
+
+- [SEI CERT C Coding Standard][sei-cert-c-coding-standard]
+
+[sei-cert-c-coding-standard]:
+  https://wiki.sei.cmu.edu/confluence/display/c/SEI+CERT+C+Coding+Standard
+
+- [Common Weakness Enumeration (CWE) - Software
+  Development][common-weakness-enumeration-sw]
+
+[common-weakness-enumeration-sw]:
+  https://cwe.mitre.org/data/definitions/699.html
 
 ## Definitions
 
@@ -68,6 +94,18 @@
 
 ## Adding a new API
 
+- [ ] My new public message codec functions take a `struct` representing the
+      message as a parameter
+
+  - Function prototypes must _not_ decompose the message to individual
+    parameters. This approach is not ergonomic and is difficult to make
+    type-safe. This is especially true for message decoding functions which must
+    use pointers for out-parameters, where it has often become ambiguous whether
+    the underlying memory represents a single object or an array.
+
+- [ ] Each new `struct` I've defined is used in at least one new function I've
+      added to the public API.
+
 - [ ] My new public `struct` definitions are _not_ marked
       `__attribute__((packed))`
 
@@ -85,6 +123,8 @@
     - Note: Any array defined with length 1 is _not_ a flexible array, and any
       access beyond the first element invokes undefined behaviour in both C and
       C++.
+
+  - [ ] I've annotated the flexible array member with `LIBPLDM_CC_COUNTED_BY()`
 
 [^1]:
     [C17 draft specification][c17-draft-standard], 6.7.2.1 Structure and union
@@ -169,6 +209,9 @@ Each of the following must succeed:
 - [ ] If the function is marked `LIBPLDM_ABI_STABLE`, then I have changed the
       annotation to `LIBPLDM_ABI_DEPRECATED` and left it in-place.
 
+  - [ ] I have updated the ABI dump, or will mark the change as WIP until it has
+        been.
+
 - [ ] If the function is marked `LIBPLDM_ABI_DEPRECATED`, then I have removed it
       only after satisfying myself that each of the following is true:
 
@@ -197,6 +240,9 @@ actions:
       name to the new name
 
 [coccinelle]: https://coccinelle.gitlabpages.inria.fr/website/
+
+- [ ] I've updated the ABI dump to capture the rename, or will mark the change
+      as WIP until it has been.
 
 ## Testing my changes
 

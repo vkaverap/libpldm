@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <uchar.h>
 
 static int pldm_platform_pdr_hdr_validate(struct pldm_value_pdr_hdr *ctx,
 					  size_t lower, size_t upper)
@@ -420,7 +421,7 @@ int encode_get_pdr_repository_info_resp(
 	return PLDM_SUCCESS;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED
 int decode_get_pdr_repository_info_resp(
 	const struct pldm_msg *msg, size_t payload_length,
 	uint8_t *completion_code, uint8_t *repository_state,
@@ -456,14 +457,81 @@ int decode_get_pdr_repository_info_resp(
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
-	pldm_msgbuf_extract_array(buf, update_time, PLDM_TIMESTAMP104_SIZE);
-	pldm_msgbuf_extract_array(buf, oem_update_time, PLDM_TIMESTAMP104_SIZE);
+	/* NOTE: Memory safety */
+	rc = pldm_msgbuf_extract_array(buf, PLDM_TIMESTAMP104_SIZE, update_time,
+				       PLDM_TIMESTAMP104_SIZE);
+	if (rc) {
+		return rc;
+	}
+
+	/* NOTE: Memory safety */
+	rc = pldm_msgbuf_extract_array(buf, PLDM_TIMESTAMP104_SIZE,
+				       oem_update_time, PLDM_TIMESTAMP104_SIZE);
+	if (rc) {
+		return rc;
+	}
+
 	pldm_msgbuf_extract_p(buf, record_count);
 	pldm_msgbuf_extract_p(buf, repository_size);
 	pldm_msgbuf_extract_p(buf, largest_record_size);
 	pldm_msgbuf_extract_p(buf, data_transfer_handle_timeout);
 
 	return pldm_msgbuf_destroy(buf);
+}
+
+LIBPLDM_ABI_TESTING
+int decode_get_pdr_repository_info_resp_safe(
+	const struct pldm_msg *msg, size_t payload_length,
+	struct pldm_pdr_repository_info_resp *resp)
+{
+	struct pldm_msgbuf _buf;
+	struct pldm_msgbuf *buf = &_buf;
+	int rc;
+
+	if (msg == NULL || resp == NULL) {
+		return -EINVAL;
+	}
+
+	rc = pldm_msg_has_error(msg, payload_length);
+	if (rc) {
+		resp->completion_code = rc;
+		return 0;
+	}
+
+	rc = pldm_msgbuf_init_errno(buf,
+				    PLDM_GET_PDR_REPOSITORY_INFO_RESP_BYTES,
+				    msg->payload, payload_length);
+	if (rc) {
+		return rc;
+	}
+
+	rc = pldm_msgbuf_extract(buf, resp->completion_code);
+	if (rc) {
+		return rc;
+	}
+
+	pldm_msgbuf_extract(buf, resp->repository_state);
+
+	rc = pldm_msgbuf_extract_array(buf, sizeof(resp->update_time),
+				       resp->update_time,
+				       sizeof(resp->update_time));
+	if (rc) {
+		return rc;
+	}
+
+	rc = pldm_msgbuf_extract_array(buf, sizeof(resp->oem_update_time),
+				       resp->oem_update_time,
+				       sizeof(resp->oem_update_time));
+	if (rc) {
+		return rc;
+	}
+
+	pldm_msgbuf_extract(buf, resp->record_count);
+	pldm_msgbuf_extract(buf, resp->repository_size);
+	pldm_msgbuf_extract(buf, resp->largest_record_size);
+	pldm_msgbuf_extract(buf, resp->data_transfer_handle_timeout);
+
+	return pldm_msgbuf_destroy_consumed(buf);
 }
 
 LIBPLDM_ABI_STABLE
@@ -502,7 +570,7 @@ int encode_get_pdr_req(uint8_t instance_id, uint32_t record_hndl,
 	return PLDM_SUCCESS;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED
 int decode_get_pdr_resp(const struct pldm_msg *msg, size_t payload_length,
 			uint8_t *completion_code, uint32_t *next_record_hndl,
 			uint32_t *next_data_transfer_hndl,
@@ -543,7 +611,12 @@ int decode_get_pdr_resp(const struct pldm_msg *msg, size_t payload_length,
 		if (record_data_length < *resp_cnt) {
 			return PLDM_ERROR_INVALID_LENGTH;
 		}
-		pldm_msgbuf_extract_array(buf, record_data, *resp_cnt);
+		/* NOTE: Memory safety */
+		rc = pldm_msgbuf_extract_array(buf, *resp_cnt, record_data,
+					       *resp_cnt);
+		if (rc) {
+			return rc;
+		}
 	}
 
 	if (*transfer_flag == PLDM_END) {
@@ -551,6 +624,59 @@ int decode_get_pdr_resp(const struct pldm_msg *msg, size_t payload_length,
 	}
 
 	return pldm_msgbuf_destroy(buf);
+}
+
+LIBPLDM_ABI_TESTING
+int decode_get_pdr_resp_safe(const struct pldm_msg *msg, size_t payload_length,
+			     struct pldm_get_pdr_resp *resp, size_t resp_len,
+			     uint8_t *transfer_crc)
+{
+	struct pldm_msgbuf _buf;
+	struct pldm_msgbuf *buf = &_buf;
+	int rc;
+
+	if (msg == NULL || resp == NULL || transfer_crc == NULL) {
+		return -EINVAL;
+	}
+
+	rc = pldm_msg_has_error(msg, payload_length);
+	if (rc) {
+		resp->completion_code = rc;
+		return 0;
+	}
+
+	rc = pldm_msgbuf_init_errno(buf, PLDM_GET_PDR_MIN_RESP_BYTES,
+				    msg->payload, payload_length);
+	if (rc) {
+		return rc;
+	}
+
+	pldm_msgbuf_extract(buf, resp->completion_code);
+	pldm_msgbuf_extract(buf, resp->next_record_handle);
+	pldm_msgbuf_extract(buf, resp->next_data_transfer_handle);
+
+	rc = pldm_msgbuf_extract(buf, resp->transfer_flag);
+	if (rc) {
+		return rc;
+	}
+
+	rc = pldm_msgbuf_extract(buf, resp->response_count);
+	if (rc) {
+		return rc;
+	}
+
+	rc = pldm_msgbuf_extract_array(
+		buf, resp->response_count, resp->record_data,
+		resp_len - (sizeof(*resp) - sizeof(resp->record_data)));
+	if (rc) {
+		return rc;
+	}
+
+	if (resp->transfer_flag == PLDM_END) {
+		pldm_msgbuf_extract_p(buf, transfer_crc);
+	}
+
+	return pldm_msgbuf_destroy_consumed(buf);
 }
 
 LIBPLDM_ABI_STABLE
@@ -930,7 +1056,9 @@ int decode_poll_for_platform_event_message_req(
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (msg == NULL) {
+	if (msg == NULL || format_version == NULL ||
+	    transfer_operation_flag == NULL || data_transfer_handle == NULL ||
+	    event_id_to_acknowledge == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
@@ -1056,7 +1184,11 @@ int encode_poll_for_platform_event_message_resp(
 	pldm_msgbuf_insert(buf, event_data_size);
 
 	if ((event_data_size > 0) && event_data) {
-		pldm_msgbuf_insert_array(buf, event_data, event_data_size);
+		rc = pldm_msgbuf_insert_array(buf, event_data_size, event_data,
+					      event_data_size);
+		if (rc) {
+			return rc;
+		}
 	}
 
 	if (transfer_flag == PLDM_END || transfer_flag == PLDM_START_AND_END) {
@@ -1326,6 +1458,12 @@ int decode_sensor_event_data(const uint8_t *event_data,
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
+	if (event_data == NULL || sensor_id == NULL ||
+	    sensor_event_class_type == NULL ||
+	    event_class_data_offset == NULL) {
+		return PLDM_ERROR_INVALID_DATA;
+	}
+
 	rc = pldm_msgbuf_init_cc(buf, PLDM_SENSOR_EVENT_DATA_MIN_LENGTH,
 				 event_data, event_data_length);
 	if (rc) {
@@ -1376,7 +1514,8 @@ int decode_sensor_op_data(const uint8_t *sensor_data, size_t sensor_data_length,
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (present_op_state == NULL || previous_op_state == NULL) {
+	if (sensor_data == NULL || present_op_state == NULL ||
+	    previous_op_state == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
@@ -1403,8 +1542,8 @@ int decode_state_sensor_data(const uint8_t *sensor_data,
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (sensor_offset == NULL || event_state == NULL ||
-	    previous_event_state == NULL) {
+	if (sensor_data == NULL || sensor_offset == NULL ||
+	    event_state == NULL || previous_event_state == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
@@ -1433,8 +1572,9 @@ int decode_numeric_sensor_data(const uint8_t *sensor_data,
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (sensor_data_size == NULL || event_state == NULL ||
-	    previous_event_state == NULL || present_reading == NULL) {
+	if (sensor_data == NULL || sensor_data_size == NULL ||
+	    event_state == NULL || previous_event_state == NULL ||
+	    present_reading == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
@@ -1881,7 +2021,8 @@ int decode_pldm_pdr_repository_chg_event_data(const uint8_t *event_data,
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (event_data_format == NULL || number_of_change_records == NULL ||
+	if (event_data == NULL || event_data_format == NULL ||
+	    number_of_change_records == NULL ||
 	    change_record_data_offset == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
@@ -1901,72 +2042,67 @@ int decode_pldm_pdr_repository_chg_event_data(const uint8_t *event_data,
 	return pldm_msgbuf_destroy(buf);
 }
 
-LIBPLDM_ABI_TESTING
-int decode_pldm_message_poll_event_data(const uint8_t *event_data,
-					size_t event_data_length,
-					uint8_t *format_version,
-					uint16_t *event_id,
-					uint32_t *data_transfer_handle)
+LIBPLDM_ABI_STABLE
+int decode_pldm_message_poll_event_data(
+	const void *event_data, size_t event_data_length,
+	struct pldm_message_poll_event *poll_event)
 {
 	struct pldm_msgbuf _buf;
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (event_data == NULL || format_version == NULL || event_id == NULL ||
-	    data_transfer_handle == NULL) {
-		return PLDM_ERROR_INVALID_DATA;
+	if (!event_data || !poll_event) {
+		return -EINVAL;
 	}
 
-	rc = pldm_msgbuf_init_cc(buf, PLDM_MSG_POLL_EVENT_LENGTH, event_data,
-				 event_data_length);
+	rc = pldm_msgbuf_init_errno(buf, PLDM_MSG_POLL_EVENT_LENGTH, event_data,
+				    event_data_length);
 	if (rc) {
 		return rc;
 	}
 
-	pldm_msgbuf_extract_p(buf, format_version);
-	rc = pldm_msgbuf_extract_p(buf, event_id);
+	pldm_msgbuf_extract(buf, poll_event->format_version);
+	rc = pldm_msgbuf_extract(buf, poll_event->event_id);
 	if (rc) {
 		return rc;
 	}
 
-	if (*event_id == 0x0000 || *event_id == 0xffff) {
-		return PLDM_ERROR_INVALID_DATA;
+	if (poll_event->event_id == 0x0000 || poll_event->event_id == 0xffff) {
+		return -EPROTO;
 	}
 
-	pldm_msgbuf_extract_p(buf, data_transfer_handle);
+	pldm_msgbuf_extract(buf, poll_event->data_transfer_handle);
 
 	return pldm_msgbuf_destroy_consumed(buf);
 }
 
 LIBPLDM_ABI_TESTING
-int encode_pldm_message_poll_event_data(uint8_t format_version,
-					uint16_t event_id,
-					uint32_t data_transfer_handle,
-					uint8_t *event_data,
-					size_t event_data_length)
+int encode_pldm_message_poll_event_data(
+	const struct pldm_message_poll_event *poll_event, void *event_data,
+	size_t event_data_length)
 {
 	struct pldm_msgbuf _buf;
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (event_data == NULL) {
-		return PLDM_ERROR_INVALID_DATA;
+	if (poll_event == NULL || event_data == NULL) {
+		return -EINVAL;
 	}
 
-	if (event_id == 0x0000 || event_id == 0xffff) {
-		return PLDM_ERROR_INVALID_DATA;
+	if (poll_event->event_id == 0x0000 || poll_event->event_id == 0xffff) {
+		return -EPROTO;
 	}
 
-	rc = pldm_msgbuf_init_cc(buf, PLDM_MSG_POLL_EVENT_LENGTH, event_data,
-				 event_data_length);
+	rc = pldm_msgbuf_init_errno(buf, PLDM_MSG_POLL_EVENT_LENGTH, event_data,
+				    event_data_length);
 	if (rc) {
 		return rc;
 	}
-	pldm_msgbuf_insert(buf, format_version);
-	pldm_msgbuf_insert(buf, event_id);
-	pldm_msgbuf_insert(buf, data_transfer_handle);
+	pldm_msgbuf_insert(buf, poll_event->format_version);
+	pldm_msgbuf_insert(buf, poll_event->event_id);
+	pldm_msgbuf_insert(buf, poll_event->data_transfer_handle);
 
-	return pldm_msgbuf_destroy(buf);
+	return pldm_msgbuf_destroy_consumed(buf);
 }
 
 LIBPLDM_ABI_STABLE
@@ -1979,7 +2115,8 @@ int decode_pldm_pdr_repository_change_record_data(
 	struct pldm_msgbuf *buf = &_buf;
 	int rc;
 
-	if (event_data_operation == NULL || number_of_change_entries == NULL ||
+	if (change_record_data == NULL || event_data_operation == NULL ||
+	    number_of_change_entries == NULL ||
 	    change_entry_data_offset == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
@@ -2443,6 +2580,10 @@ int decode_numeric_effecter_pdr_data(
 	struct pldm_value_pdr_hdr hdr;
 	int rc;
 
+	if (!pdr_data || !pdr_value) {
+		return PLDM_ERROR_INVALID_DATA;
+	}
+
 	rc = pldm_msgbuf_init_cc(buf, PLDM_PDR_NUMERIC_EFFECTER_PDR_MIN_LENGTH,
 				 pdr_data, pdr_data_length);
 	if (rc) {
@@ -2690,4 +2831,250 @@ int encode_get_state_effecter_states_resp(
 	}
 
 	return pldm_msgbuf_destroy_consumed(buf);
+}
+
+LIBPLDM_ABI_STABLE
+int decode_entity_auxiliary_names_pdr(
+	const void *data, size_t data_length,
+	struct pldm_entity_auxiliary_names_pdr *pdr, size_t pdr_length)
+{
+	struct pldm_msgbuf _buf;
+	struct pldm_msgbuf *buf = &_buf;
+	struct pldm_msgbuf _src;
+	struct pldm_msgbuf *src = &_src;
+	struct pldm_msgbuf _dst;
+	struct pldm_msgbuf *dst = &_dst;
+	size_t names_len = 0;
+	void *names = NULL;
+	int rc;
+	int i;
+
+	if (!data || !pdr) {
+		return -EINVAL;
+	}
+
+	/*
+	 * Alignment of auxiliary_name_data is an invariant as we statically assert
+	 * its behaviour in the header.
+	 */
+	assert(!((uintptr_t)pdr->auxiliary_name_data &
+		 (alignof(pldm_utf16be) - 1)));
+
+	/* Reject any lengths that are obviously invalid */
+	if (pdr_length < data_length || pdr_length < sizeof(*pdr)) {
+		return -EINVAL;
+	}
+
+	rc = pldm_msgbuf_init_errno(
+		buf, PLDM_PDR_ENTITY_AUXILIARY_NAME_PDR_MIN_LENGTH, data,
+		data_length);
+	if (rc) {
+		return rc;
+	}
+
+	rc = pldm_msgbuf_extract_value_pdr_hdr(buf, &pdr->hdr);
+	if (rc) {
+		return rc;
+	}
+
+	rc = pldm_platform_pdr_hdr_validate(
+		&pdr->hdr, PLDM_PDR_ENTITY_AUXILIARY_NAME_PDR_MIN_LENGTH,
+		data_length);
+	if (rc) {
+		return rc;
+	}
+
+	pldm_msgbuf_extract(buf, pdr->container.entity_type);
+	pldm_msgbuf_extract(buf, pdr->container.entity_instance_num);
+	pldm_msgbuf_extract(buf, pdr->container.entity_container_id);
+	pldm_msgbuf_extract(buf, pdr->shared_name_count);
+	rc = pldm_msgbuf_extract(buf, pdr->name_string_count);
+	if (rc < 0) {
+		return rc;
+	}
+
+	rc = pldm_msgbuf_span_remaining(buf, &names, &names_len);
+	if (rc < 0) {
+		return rc;
+	}
+	assert(names);
+
+	pdr->auxiliary_name_data_size = pdr_length - sizeof(*pdr);
+
+	rc = pldm_msgbuf_init_errno(dst, pdr->auxiliary_name_data_size,
+				    pdr->auxiliary_name_data,
+				    pdr->auxiliary_name_data_size);
+	if (rc < 0) {
+		return rc;
+	}
+
+	/*
+	 * Below we do two passes over the same region. This is to first pack the
+	 * UTF16-BE strings into auxiliary_name_data, followed by the ASCII strings,
+	 * to maintain appropriate alignment.
+	 */
+
+	/* Initialise for the first pass to extract the UTF16-BE name strings */
+	rc = pldm_msgbuf_init_errno(src, names_len, names, names_len);
+	if (rc < 0) {
+		return rc;
+	}
+
+	for (i = 0; i < pdr->name_string_count; i++) {
+		pldm_msgbuf_span_string_ascii(src, NULL, NULL);
+		rc = pldm_msgbuf_copy_string_utf16(dst, src);
+		if (rc) {
+			return rc;
+		}
+	}
+
+	rc = pldm_msgbuf_destroy_consumed(src);
+	if (rc < 0) {
+		return rc;
+	}
+
+	/* Reinitialise for the second pass to extract the ASCII tag strings */
+	rc = pldm_msgbuf_init_errno(src, names_len, names, names_len);
+	if (rc < 0) {
+		return rc;
+	}
+
+	for (i = 0; i < pdr->name_string_count; i++) {
+		rc = pldm_msgbuf_copy_string_ascii(dst, src);
+		if (rc) {
+			return rc;
+		}
+		pldm_msgbuf_span_string_utf16(src, NULL, NULL);
+	}
+
+	if ((rc = pldm_msgbuf_destroy(dst)) ||
+	    (rc = pldm_msgbuf_destroy(src)) ||
+	    (rc = pldm_msgbuf_destroy(buf))) {
+		return rc;
+	}
+
+	return 0;
+}
+
+LIBPLDM_ABI_STABLE
+int decode_pldm_entity_auxiliary_names_pdr_index(
+	struct pldm_entity_auxiliary_names_pdr *pdr)
+{
+	struct pldm_msgbuf _buf;
+	struct pldm_msgbuf *buf = &_buf;
+	int rc;
+	int i;
+
+	if (!pdr) {
+		return -EINVAL;
+	}
+
+	if (pdr->name_string_count == 0 && pdr->names) {
+		return -EINVAL;
+	}
+
+	if (pdr->name_string_count > 0 && !pdr->names) {
+		return -EINVAL;
+	}
+
+	if (pdr->name_string_count == 0) {
+		return 0;
+	}
+
+	/*
+	 * Minimum size is one NUL for each member of each entry
+	 *
+	 * Note that the definition of nameLanguageTag in DSP0248 v1.2.2
+	 * states the following:
+	 *
+	 * > A null-terminated ISO646 ASCII string ...
+	 * >
+	 * > special value: null string = 0x0000 = unspecified.
+	 *
+	 * Until proven otherwise we will assume the "0x0000" is a
+	 * misrepresentation of an ASCII NUL, and that ASCII NUL is
+	 * represented by a single byte.
+	 */
+	rc = pldm_msgbuf_init_errno(
+		buf, pdr->name_string_count * (sizeof(char) + sizeof(char16_t)),
+		pdr->auxiliary_name_data, pdr->auxiliary_name_data_size);
+	if (rc) {
+		return rc;
+	}
+
+	for (i = 0; i < pdr->name_string_count; i++) {
+		void *loc = NULL;
+		pldm_msgbuf_span_string_utf16(buf, &loc, NULL);
+		pdr->names[i].name = loc;
+	}
+
+	for (i = 0; i < pdr->name_string_count; i++) {
+		void *loc = NULL;
+		pldm_msgbuf_span_string_ascii(buf, &loc, NULL);
+		pdr->names[i].tag = loc;
+	}
+
+	return pldm_msgbuf_destroy_consumed(buf);
+}
+
+LIBPLDM_ABI_STABLE
+int decode_pldm_platform_cper_event(const void *event_data,
+				    size_t event_data_length,
+				    struct pldm_platform_cper_event *cper_event,
+				    size_t cper_event_length)
+{
+	struct pldm_msgbuf _buf;
+	struct pldm_msgbuf *buf = &_buf;
+	int rc;
+
+	if (!cper_event || !event_data) {
+		return -EINVAL;
+	}
+
+	if (cper_event_length < sizeof(*cper_event)) {
+		return -EINVAL;
+	}
+
+	rc = pldm_msgbuf_init_errno(buf, PLDM_PLATFORM_CPER_EVENT_MIN_LENGTH,
+				    event_data, event_data_length);
+	if (rc) {
+		return rc;
+	}
+
+	pldm_msgbuf_extract(buf, cper_event->format_version);
+	rc = pldm_msgbuf_extract(buf, cper_event->format_type);
+	if (rc) {
+		return rc;
+	}
+	if (cper_event->format_type != PLDM_PLATFORM_CPER_EVENT_WITH_HEADER &&
+	    cper_event->format_type !=
+		    PLDM_PLATFORM_CPER_EVENT_WITHOUT_HEADER) {
+		return -EPROTO;
+	}
+
+	rc = pldm_msgbuf_extract(buf, cper_event->event_data_length);
+	if (rc) {
+		return rc;
+	}
+
+	if (cper_event->event_data_length >
+	    (cper_event_length - sizeof(*cper_event))) {
+		return -EOVERFLOW;
+	}
+
+	rc = pldm_msgbuf_extract_array_uint8(
+		buf, cper_event->event_data_length, cper_event->event_data,
+		cper_event_length - sizeof(*cper_event));
+	if (rc) {
+		return rc;
+	}
+
+	return pldm_msgbuf_destroy_consumed(buf);
+}
+
+LIBPLDM_ABI_STABLE
+uint8_t *
+pldm_platform_cper_event_event_data(struct pldm_platform_cper_event *event)
+{
+	return event->event_data;
 }

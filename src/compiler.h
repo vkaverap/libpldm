@@ -2,6 +2,30 @@
 #ifndef PLDM_COMPILER_H
 #define PLDM_COMPILER_H
 
+#ifndef __has_attribute
+#error The libpldm implementation requires __has_attribute
+#endif
+
+#include <assert.h>
+
+static struct {
+	static_assert(__has_attribute(always_inline),
+		      "`always_inline` attribute is required");
+	static_assert(__has_attribute(nonnull),
+		      "`nonnull` attribute is required");
+	static_assert(__has_attribute(unused),
+		      "`unused` attribute is required");
+	static_assert(__has_attribute(warn_unused_result),
+		      "`warn_unused_result` attribute is required");
+	int compliance;
+} pldm_required_attributes __attribute__((unused));
+
+#define LIBPLDM_CC_ALWAYS_INLINE      __attribute__((always_inline)) static inline
+#define LIBPLDM_CC_NONNULL	      __attribute__((nonnull))
+#define LIBPLDM_CC_NONNULL_ARGS(...)  __attribute__((nonnull(__VA_ARGS__)))
+#define LIBPLDM_CC_UNUSED	      __attribute__((unused))
+#define LIBPLDM_CC_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+
 // NOLINTBEGIN(bugprone-macro-parentheses)
 /**
  * Require that the given object is of the specified type.
