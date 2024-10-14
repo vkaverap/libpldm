@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later */
+#include "api.h"
 #include "dsp/base.h"
 #include "msgbuf.h"
 #include <libpldm/firmware_update.h>
@@ -904,15 +905,15 @@ int decode_query_downstream_devices_resp(
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
-	rc = pldm_msgbuf_init_cc(buf, PLDM_OPTIONAL_COMMAND_RESP_MIN_LEN,
-				 msg->payload, payload_length);
+	rc = pldm_msgbuf_init_errno(buf, PLDM_OPTIONAL_COMMAND_RESP_MIN_LEN,
+				    msg->payload, payload_length);
 	if (rc) {
 		return rc;
 	}
 
 	rc = pldm_msgbuf_extract(buf, resp_data->completion_code);
 	if (rc) {
-		return rc;
+		return pldm_xlate_errno(rc);
 	}
 	if (PLDM_SUCCESS != resp_data->completion_code) {
 		// Return the CC directly without decoding the rest of the payload
@@ -926,7 +927,7 @@ int decode_query_downstream_devices_resp(
 	rc = pldm_msgbuf_extract(buf,
 				 resp_data->downstream_device_update_supported);
 	if (rc) {
-		return rc;
+		return pldm_xlate_errno(rc);
 	}
 
 	if (!is_downstream_device_update_support_valid(
@@ -938,7 +939,12 @@ int decode_query_downstream_devices_resp(
 	pldm_msgbuf_extract(buf, resp_data->max_number_of_downstream_devices);
 	pldm_msgbuf_extract(buf, resp_data->capabilities.value);
 
-	return pldm_msgbuf_destroy_consumed(buf);
+	rc = pldm_msgbuf_destroy_consumed(buf);
+	if (rc) {
+		pldm_xlate_errno(rc);
+	}
+
+	return PLDM_SUCCESS;
 }
 
 LIBPLDM_ABI_TESTING
@@ -969,18 +975,23 @@ int encode_query_downstream_identifiers_req(
 		return rc;
 	}
 
-	rc = pldm_msgbuf_init_cc(buf,
-				 PLDM_QUERY_DOWNSTREAM_IDENTIFIERS_REQ_BYTES,
-				 msg->payload, payload_length);
+	rc = pldm_msgbuf_init_errno(buf,
+				    PLDM_QUERY_DOWNSTREAM_IDENTIFIERS_REQ_BYTES,
+				    msg->payload, payload_length);
 	if (rc) {
-		return rc;
+		return pldm_xlate_errno(rc);
 	}
 
 	pldm_msgbuf_insert(buf, data_transfer_handle);
 	// Data correctness has been verified, cast it to 1-byte data directly.
 	pldm_msgbuf_insert(buf, (uint8_t)transfer_operation_flag);
 
-	return pldm_msgbuf_destroy(buf);
+	rc = pldm_msgbuf_destroy(buf);
+	if (rc) {
+		return pldm_xlate_errno(rc);
+	}
+
+	return PLDM_SUCCESS;
 }
 
 LIBPLDM_ABI_TESTING
@@ -998,15 +1009,15 @@ int decode_query_downstream_identifiers_resp(
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
-	rc = pldm_msgbuf_init_cc(buf, PLDM_OPTIONAL_COMMAND_RESP_MIN_LEN,
-				 msg->payload, payload_length);
+	rc = pldm_msgbuf_init_errno(buf, PLDM_OPTIONAL_COMMAND_RESP_MIN_LEN,
+				    msg->payload, payload_length);
 	if (rc) {
-		return rc;
+		return pldm_xlate_errno(rc);
 	}
 
 	rc = pldm_msgbuf_extract(buf, resp_data->completion_code);
 	if (rc) {
-		return rc;
+		return pldm_xlate_errno(rc);
 	}
 	if (PLDM_SUCCESS != resp_data->completion_code) {
 		return PLDM_SUCCESS;
@@ -1021,7 +1032,7 @@ int decode_query_downstream_identifiers_resp(
 
 	rc = pldm_msgbuf_extract(buf, resp_data->downstream_devices_length);
 	if (rc) {
-		return rc;
+		return pldm_xlate_errno(rc);
 	}
 
 	pldm_msgbuf_extract(buf, resp_data->number_of_downstream_devices);
@@ -1029,11 +1040,16 @@ int decode_query_downstream_identifiers_resp(
 				       resp_data->downstream_devices_length,
 				       (void **)&downstream_devices->ptr);
 	if (rc) {
-		return rc;
+		return pldm_xlate_errno(rc);
 	}
 	downstream_devices->length = resp_data->downstream_devices_length;
 
-	return pldm_msgbuf_destroy(buf);
+	rc = pldm_msgbuf_destroy(buf);
+	if (rc) {
+		return pldm_xlate_errno(rc);
+	}
+
+	return PLDM_SUCCESS;
 }
 
 LIBPLDM_ABI_TESTING
@@ -1209,7 +1225,7 @@ LIBPLDM_ABI_TESTING
 int decode_downstream_device_parameter_table_entry_versions(
 	const struct variable_field *versions,
 	struct pldm_downstream_device_parameter_entry *entry, char *active,
-	char *pending)
+	size_t active_len, char *pending, size_t pending_len)
 {
 	struct pldm_msgbuf _buf;
 	struct pldm_msgbuf *buf = &_buf;
@@ -1218,6 +1234,14 @@ int decode_downstream_device_parameter_table_entry_versions(
 	if (versions == NULL || versions->ptr == NULL || !versions->length ||
 	    entry == NULL || active == NULL || pending == NULL) {
 		return -EINVAL;
+	}
+
+	if (!active_len || active_len - 1 < entry->active_comp_ver_str_len) {
+		return -EOVERFLOW;
+	}
+
+	if (!pending_len || pending_len - 1 < entry->pending_comp_ver_str_len) {
+		return -EOVERFLOW;
 	}
 
 	/* This API should be called after decode_downstream_device_parameter_table_entry
@@ -1232,15 +1256,14 @@ int decode_downstream_device_parameter_table_entry_versions(
 	}
 
 	rc = pldm_msgbuf_extract_array(buf, entry->active_comp_ver_str_len,
-				       active, entry->active_comp_ver_str_len);
+				       active, active_len);
 	if (rc < 0) {
 		return rc;
 	}
 
 	active[entry->active_comp_ver_str_len] = '\0';
 	rc = pldm_msgbuf_extract_array(buf, entry->pending_comp_ver_str_len,
-				       pending,
-				       entry->pending_comp_ver_str_len);
+				       pending, pending_len);
 	if (rc < 0) {
 		return rc;
 	}

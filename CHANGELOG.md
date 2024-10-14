@@ -19,6 +19,174 @@ Change categories:
 
 ### Added
 
+1. oem: meta: Add decode_oem_meta_file_io_write_req()
+2. oem: meta: Add decode_oem_meta_file_io_read_req()
+3. oem: meta: Add encode_oem_meta_file_io_read_resp()
+4. pdr: Add pldm_entity_association_pdr_remove_contained_entity()
+5. pdr: Add pldm_pdr_remove_fru_record_set_by_rsi()
+6. pldm_entity_association_tree_copy_root_check()
+7. oem: ibm: Add topology related state set and enum
+
+8. base: Add size and buffer macros for struct pldm_msg
+
+   Together these macros reduce the need for use of reinterpret_cast<>() in C++.
+
+### Changed
+
+1. dsp: bios_table: Null check for pldm_bios_table_iter_is_end()
+
+   pldm_bios_table_iter_is_end() now returns true if the provided argument is
+   NULL.
+
+2. Register assignment for parameters of a number of APIs changed with increased
+   scrutiny on their implementations.
+
+   - `decode_entity_auxiliary_names_pdr()`
+   - `decode_get_state_sensor_readings_resp()`
+   - `decode_oem_meta_file_io_req()`
+   - `decode_platform_event_message_req()`
+   - `decode_platform_event_message_resp()`
+   - `decode_sensor_op_data()`
+   - `encode_get_state_effecter_states_resp()`
+   - `encode_state_effecter_pdr()`
+   - `encode_state_sensor_pdr()`
+   - `pldm_bios_table_append_pad_checksum()`
+   - `pldm_bios_table_attr_value_entry_encode_enum()`
+   - `pldm_bios_table_attr_value_entry_encode_string()`
+   - `pldm_pdr_find_record()`
+   - `pldm_pdr_get_next_record()`
+
+3. platform: Support PLDM_CPER_EVENT in encode_platform_event_message_req()
+
+4. dsp: firmware_update: Bounds check
+   decode_downstream_device_parameter_table_entry_versions()
+
+   The additional bounds-checking required the addition of further length
+   parameters.
+
+### Deprecated
+
+1. oem: meta: Deprecate `decode_oem_meta_file_io_req()`
+
+   Users should switch to `decode_oem_meta_file_io_write_req()`. Modify this
+   function to make it safer.
+
+   Modification:
+
+   - The meaning of the returned result.
+   - Change parameters from individual pointers to a struct.
+   - Check the length provided in the message won't exceed the buffer.
+
+2. pldm_entity_association_tree_copy_root()
+
+   The implementation allocates, but gives no indication to the caller if an
+   allocation (and hence the copy) has failed. Users should migrate to
+   pldm_entity_association_tree_copy_root_check().
+
+3. The following APIs are deprecated as unsafe due to various unfixable CWE
+   violations:
+
+   - [CWE-129: Improper Validation of Array Index](https://cwe.mitre.org/data/definitions/129.html)
+
+     - `encode_get_bios_current_value_by_handle_resp()`
+     - `encode_get_bios_table_resp()`
+     - `encode_get_file_table_resp()`
+     - `encode_get_version_resp()`
+     - `pldm_bios_table_attr_entry_enum_decode_def_indices()`
+     - `pldm_bios_table_attr_entry_enum_decode_def_num()`
+     - `pldm_bios_table_attr_find_by_handle()`
+     - `pldm_bios_table_attr_find_by_string_handle()`
+     - `pldm_bios_table_attr_value_find_by_handle()`
+     - `pldm_bios_table_iter_create()`
+     - `pldm_bios_table_iter_is_end()`
+     - `pldm_bios_table_string_find_by_handle()`
+     - `pldm_bios_table_string_find_by_string()`
+
+   - [CWE-617: Reachable Assertion](https://cwe.mitre.org/data/definitions/617.html)
+
+     - `pldm_entity_association_tree_copy_root()`
+
+   - [CWE-789: Memory Allocation with Excessive Size Value](https://cwe.mitre.org/data/definitions/789.html)
+
+     - `decode_oem_meta_file_io_req()`
+
+   - [CWE-823: Use of Out-of-range Pointer Offset](https://cwe.mitre.org/data/definitions/823.html)
+     - `encode_fru_record()`
+     - `encode_get_pdr_resp()`
+     - `pldm_bios_table_attr_entry_enum_encode_length()`
+
+### Removed
+
+1. Deprecated functions with the `_check` suffix
+
+   - `get_fru_record_by_option_check()`
+   - `pldm_bios_table_append_pad_checksum_check()`
+   - `pldm_bios_table_attr_entry_enum_decode_def_num_check()`
+   - `pldm_bios_table_attr_entry_enum_decode_pv_hdls_check()`
+   - `pldm_bios_table_attr_entry_enum_decode_pv_num_check()`
+   - `pldm_bios_table_attr_entry_enum_encode_check()`
+   - `pldm_bios_table_attr_entry_integer_encode_check()`
+   - `pldm_bios_table_attr_entry_string_decode_def_string_length_check()`
+   - `pldm_bios_table_attr_entry_string_encode_check()`
+   - `pldm_bios_table_attr_value_entry_encode_enum_check()`
+   - `pldm_bios_table_attr_value_entry_encode_integer_check()`
+   - `pldm_bios_table_attr_value_entry_encode_string_check()`
+   - `pldm_bios_table_string_entry_decode_string_check()`
+   - `pldm_bios_table_string_entry_encode_check()`
+   - `pldm_entity_association_pdr_add_check()`
+   - `pldm_entity_association_pdr_add_from_node_check()`
+   - `pldm_pdr_add_check()`
+   - `pldm_pdr_add_fru_record_set_check()`
+
+### Fixed
+
+1. dsp: bios_table: Null check for pldm_bios_table_iter_is_end()
+
+   Avoid a caller-controlled NULL pointer dereference in the library
+   implementation.
+
+2. platform: fix encode/decode_poll_for_platform_event_message_req
+
+   Update checking of `TransferOperationFlag` and `eventIDToAcknowledge` to
+   follow spec.
+
+3. platform: Fix checking `eventIDToAcknowledge`
+
+   As the event receiver sends `PollForPlatformEventMessage` with the
+   `tranferFlag` is `AcknowledgementOnly`, the value `eventIDToAcknowledge`
+   should be the previously retrieved eventID (from the PLDM terminus).
+
+4. dsp: platform: Prevent overflow of arithmetic on event_data_length
+5. dsp: platform: Bounds check encode_sensor_state_pdr()
+6. dsp: platform: Bounds check encode_state_effecter_pdr()
+7. dsp: pdr: Bounds check pldm_entity_association_pdr_extract()
+8. dsp: bios_table: Bounds check pldm_bios_table_append_pad_checksum()
+9. dsp: bios_table: Bounds check
+   pldm_bios_table_attr_value_entry_encode_string()
+10. dsp: bios_table: Bounds check pldm_bios_table_attr_value_entry_encode_enum()
+11. dsp: firmware_update: Bounds check
+    decode_downstream_device_parameter_table_entry_versions()
+12. oem: ibm: platform: Bounds check encode_bios_attribute_update_event_req()
+13. dsp: fru: Bounds check encode_get_fru_record_by_option_resp()
+14. dsp: fru: Bounds check encode_fru_record()
+15. dsp: bios: Bounds check encode_set_bios_table_req()
+16. dsp: bios: Bounds check encode_set_bios_attribute_current_value_req()
+17. dsp: bios_table: Bounds check pldm_bios_table_string_entry_encode()
+
+## [0.9.1] - 2024-09-07
+
+### Changed
+
+1. Moved evolutions intended for v0.9.0 into place
+
+   Evolutions for the release have been moved from `evolutions/current` to
+   `evolutions/v0.9.1`. Library users can apply them to migrate off of
+   deprecated APIs.
+
+## [0.9.0] - 2024-09-07
+
+### Added
+
 1. base: Define macros for reserved TIDs
 2. pdr: Add pldm_entity_association_pdr_add_contained_entity_to_remote_pdr()
 3. pdr: Add pldm_entity_association_pdr_create_new()
@@ -49,6 +217,9 @@ Change categories:
    parameter `previous_op_state`.
 
 5. platform: Stabilise decode_pldm_platform_cper_event() API
+6. oem: meta: Stabilise decode_oem_meta_file_io_write_req() API
+7. oem: meta: Stabilise decode_oem_meta_file_io_read_req() API
+8. oem: meta: Stabilise encode_oem_meta_file_io_read_resp() API
 
 ### Deprecated
 
@@ -104,6 +275,8 @@ Change categories:
 ### Fixed
 
 1. requester: instance-id: Release read lock on conflict
+2. pdr: Error propagation for
+   pldm_entity_association_pdr_add_from_node_with_record_handle()
 
 ## [0.8.0] - 2024-05-23
 

@@ -35,7 +35,8 @@ void pldm_bios_table_iter_free(struct pldm_bios_table_iter *iter);
 
 /** @brief Check if the iterator reaches the end of the bios table
  *  @param[in] iter - Pointer to the bios table iterator
- *  @return true if iterator reaches the end
+ *  @return true if either the iterator reaches the end or @p iter is NULL,
+ *          otherwise false.
  *  @note *end* is a position after the last entry.
  */
 bool pldm_bios_table_iter_is_end(const struct pldm_bios_table_iter *iter);
@@ -104,9 +105,6 @@ size_t pldm_bios_table_string_entry_encode_length(uint16_t string_length);
  */
 int pldm_bios_table_string_entry_encode(void *entry, size_t entry_length,
 					const char *str, uint16_t str_length);
-int pldm_bios_table_string_entry_encode_check(void *entry, size_t entry_length,
-					      const char *str,
-					      uint16_t str_length);
 
 /** @brief Get the string handle for the entry
  *  @param[in] entry - Pointer to a bios string table entry
@@ -135,9 +133,6 @@ uint16_t pldm_bios_table_string_entry_decode_string_length(
  *          be truncated (but still NUL terminated).
  */
 int pldm_bios_table_string_entry_decode_string(
-	const struct pldm_bios_string_table_entry *entry, char *buffer,
-	size_t size);
-int pldm_bios_table_string_entry_decode_string_check(
 	const struct pldm_bios_string_table_entry *entry, char *buffer,
 	size_t size);
 
@@ -205,7 +200,7 @@ pldm_bios_table_attr_find_by_string_handle(const void *table, size_t length,
 /** @struct pldm_bios_table_attr_entry_enum_info
  *
  *  An auxiliary structure for passing parameters to @ref
- * pldm_bios_table_attr_entry_enum_encode_check
+ * pldm_bios_table_attr_entry_enum_encode
  *
  */
 struct pldm_bios_table_attr_entry_enum_info {
@@ -239,9 +234,6 @@ size_t pldm_bios_table_attr_entry_enum_encode_length(uint8_t pv_num,
 int pldm_bios_table_attr_entry_enum_encode(
 	void *entry, size_t entry_length,
 	const struct pldm_bios_table_attr_entry_enum_info *info);
-int pldm_bios_table_attr_entry_enum_encode_check(
-	void *entry, size_t entry_length,
-	const struct pldm_bios_table_attr_entry_enum_info *info);
 
 /** @brief Get the total number of possible values for the entry and check the
  * validity of the parameters
@@ -251,8 +243,6 @@ int pldm_bios_table_attr_entry_enum_encode_check(
  *          PLDM_ERROR_INVALID_DATA if entry is not a valid PLDM_BIOS_ENUMERATION
  */
 int pldm_bios_table_attr_entry_enum_decode_pv_num(
-	const struct pldm_bios_attr_table_entry *entry, uint8_t *pv_num);
-int pldm_bios_table_attr_entry_enum_decode_pv_num_check(
 	const struct pldm_bios_attr_table_entry *entry, uint8_t *pv_num);
 
 /** @brief Get the total number of default values for the entry and check the
@@ -264,8 +254,6 @@ int pldm_bios_table_attr_entry_enum_decode_pv_num_check(
  */
 int pldm_bios_table_attr_entry_enum_decode_def_num(
 	const struct pldm_bios_attr_table_entry *entry, uint8_t *def_num);
-int pldm_bios_table_attr_entry_enum_decode_def_num_check(
-	const struct pldm_bios_attr_table_entry *entry, uint8_t *def_num);
 
 /** @brief Get possible values string handles and check the validity of the
  * parameters
@@ -276,15 +264,12 @@ int pldm_bios_table_attr_entry_enum_decode_def_num_check(
  * store
  *  @return PLDM_SUCCESS on success, otherwise PLDM_ERROR_INVALID_DATA if entry or pv_hdls are NULL,
  *          or entry is not of type PLDM_BIOS_ENUMERATION. An appropriate value for pv_num can be
- *          determined using @ref pldm_bios_table_attr_entry_enum_decode_pv_num_check. pv_num may be
+ *          determined using @ref pldm_bios_table_attr_entry_enum_decode_pv_num. pv_num may be
  *          less than the value provided by @ref
- *          pldm_bios_table_attr_entry_enum_decode_pv_num_check, in which case only the first pv_num
+ *          pldm_bios_table_attr_entry_enum_decode_pv_num, in which case only the first pv_num
  *          handles will be decoded.
  */
 int pldm_bios_table_attr_entry_enum_decode_pv_hdls(
-	const struct pldm_bios_attr_table_entry *entry, uint16_t *pv_hdls,
-	uint8_t pv_num);
-int pldm_bios_table_attr_entry_enum_decode_pv_hdls_check(
 	const struct pldm_bios_attr_table_entry *entry, uint16_t *pv_hdls,
 	uint8_t pv_num);
 
@@ -346,9 +331,6 @@ size_t pldm_bios_table_attr_entry_string_encode_length(uint16_t def_str_len);
 int pldm_bios_table_attr_entry_string_encode(
 	void *entry, size_t entry_length,
 	const struct pldm_bios_table_attr_entry_string_info *info);
-int pldm_bios_table_attr_entry_string_encode_check(
-	void *entry, size_t entry_length,
-	const struct pldm_bios_table_attr_entry_string_info *info);
 
 /** @brief Get the length of default string in bytes for the entry and check the
  * validity of the parameters
@@ -358,9 +340,6 @@ int pldm_bios_table_attr_entry_string_encode_check(
  *          are NULL, or entry is not of type PLDM_BIOS_STRING
  */
 int pldm_bios_table_attr_entry_string_decode_def_string_length(
-	const struct pldm_bios_attr_table_entry *entry,
-	uint16_t *def_string_length);
-int pldm_bios_table_attr_entry_string_decode_def_string_length_check(
 	const struct pldm_bios_attr_table_entry *entry,
 	uint16_t *def_string_length);
 
@@ -440,9 +419,6 @@ size_t pldm_bios_table_attr_entry_integer_encode_length(void);
 int pldm_bios_table_attr_entry_integer_encode(
 	void *entry, size_t entry_length,
 	const struct pldm_bios_table_attr_entry_integer_info *info);
-int pldm_bios_table_attr_entry_integer_encode_check(
-	void *entry, size_t entry_length,
-	const struct pldm_bios_table_attr_entry_integer_info *info);
 
 /** @brief Decode the specific fields(integer) of attribute table entry
  *  @param[in] entry - Pointer to an entry of attribute table
@@ -512,9 +488,6 @@ uint8_t pldm_bios_table_attr_value_entry_enum_decode_handles(
 int pldm_bios_table_attr_value_entry_encode_enum(
 	void *entry, size_t entry_length, uint16_t attr_handle,
 	uint8_t attr_type, uint8_t count, const uint8_t *handles);
-int pldm_bios_table_attr_value_entry_encode_enum_check(
-	void *entry, size_t entry_length, uint16_t attr_handle,
-	uint8_t attr_type, uint8_t count, const uint8_t *handles);
 
 /** @brief Get length that an attribute value entry(type: string) will take
  *  @param[in] string_length - Length of the current string in byte, 0 indicates
@@ -560,9 +533,6 @@ void pldm_bios_table_attr_value_entry_string_decode_string(
 int pldm_bios_table_attr_value_entry_encode_string(
 	void *entry, size_t entry_length, uint16_t attr_handle,
 	uint8_t attr_type, uint16_t str_length, const char *string);
-int pldm_bios_table_attr_value_entry_encode_string_check(
-	void *entry, size_t entry_length, uint16_t attr_handle,
-	uint8_t attr_type, uint16_t str_length, const char *string);
 
 /** @brief Get length that an attribute value entry(type: integer) will take
  *  @return The length that an entry(type: integer) will take
@@ -594,11 +564,6 @@ int pldm_bios_table_attr_value_entry_encode_integer(void *entry,
 						    uint16_t attr_handle,
 						    uint8_t attr_type,
 						    uint64_t cv);
-int pldm_bios_table_attr_value_entry_encode_integer_check(void *entry,
-							  size_t entry_length,
-							  uint16_t attr_handle,
-							  uint8_t attr_type,
-							  uint64_t cv);
 
 /** @brief Get the handle from the attribute value entry
  *  @param[in] entry - Pointer to bios attribute value entry
@@ -643,8 +608,6 @@ size_t pldm_bios_table_pad_checksum_size(size_t size_without_pad);
  */
 int pldm_bios_table_append_pad_checksum(void *table, size_t capacity,
 					size_t *size);
-int pldm_bios_table_append_pad_checksum_check(void *table, size_t capacity,
-					      size_t *size);
 
 /** @brief Build a new table and update an entry
  *  @param[in] src_table - Pointer to the source table

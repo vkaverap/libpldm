@@ -94,6 +94,26 @@
 
 ## Adding a new API
 
+### Naming macros, functions and types
+
+- [ ] All publicly exposed macros, types and functions relating to the PLDM
+      specifications must be prefixed with either `pldm_` or `PLDM_` as
+      appropriate
+
+  - The only (temporary) exception are the `encode_*()` and `decode_*()`
+    function symbols
+
+- [ ] All publicly exposed macros, types and functions relating to the library
+      implementation must be prefixed with `libpldm_` or `LIBPLDM_`
+
+- [ ] All `pldm_`-prefixed symbols must also name the related specification. For
+      example, for DSP0248 Platform Monitoring and Control, the symbol prefix
+      should be `pldm_platform_`.
+
+- [ ] All enum members must be prefixed with the type name
+
+### All other concerns
+
 - [ ] My new public message codec functions take a `struct` representing the
       message as a parameter
 
@@ -193,14 +213,34 @@
 
 ## Updating an ABI dump
 
-Each of the following must succeed:
+To update the ABI dump you'll need to build an appropriate OpenBMC CI container
+image of your own. Some hints on how to do this locally can be found [in the
+openbmc/docs repository][openbmc-docs-local-ci]. You can list your locally built
+images with `docker images`.
 
-- [ ] Enter the OpenBMC CI Docker container
-  - Approximately:
-    `docker run --cap-add=sys_admin --rm=true --privileged=true -u $USER -w $(pwd) -v $(pwd):$(pwd) -e MAKEFLAGS= -it openbmc/ubuntu-unit-test:2024-W21-ce361f95ff4fa669`
-- [ ] `CC=gcc CXX=g++; [ $(uname -m) = 'x86_64' ] && meson setup -Dabi=deprecated,stable build`
-- [ ] `meson compile -C build`
-- [ ] `./scripts/abi-dump-formatter < build/src/current.dump > abi/x86_64/gcc.dump`
+[openbmc-docs-local-ci]:
+  https://github.com/openbmc/docs/blob/master/testing/local-ci-build.md
+
+Assuming:
+
+```
+export OPENBMC_CI_IMAGE=openbmc/ubuntu-unit-test:2024-W21-ce361f95ff4fa669
+```
+
+the ABI dump can be updated with:
+
+```
+docker run \
+  --cap-add=sys_admin \
+  --rm=true \
+  --privileged=true \
+  -u $USER \
+  -w $(pwd) \
+  -v $(pwd):$(pwd) \
+  -e MAKEFLAGS= \
+  -t $OPENBMC_CI_IMAGE \
+  ./scripts/abi-dump-updater
+```
 
 ## Removing an API
 
@@ -244,22 +284,13 @@ actions:
 - [ ] I've updated the ABI dump to capture the rename, or will mark the change
       as WIP until it has been.
 
-## Testing my changes
+## Fixing Implementation Defects
 
-Each of the following must succeed when executed in order. Note that to avoid
-[googletest bug #4232][googletest-issue-4232] you must avoid using GCC 12
-(shipped in Debian Bookworm).
+- [ ] My change fixing the bug includes a [Fixes tag][linux-kernel-fixes-tag]
+      identifying the change introducing the defect.
 
-[googletest-issue-4232]: https://github.com/google/googletest/issues/4232
+[linux-kernel-fixes-tag]:
+  https://docs.kernel.org/process/submitting-patches.html#describe-your-changes
 
-- [ ] `meson setup -Dabi-compliance-check=disabled build`
-- [ ] `meson compile -C build && meson test -C build`
-
-- [ ] `meson configure --buildtype=release build`
-- [ ] `meson compile -C build && meson test -C build`
-
-- [ ] `meson configure --buildtype=debug build`
-- [ ] `meson configure -Dabi=deprecated,stable build`
-- [ ] `meson compile -C build && meson test -C build`
-
-This process is captured in `scripts/pre-submit` for automation.
+- [ ] My change fixing the bug includes test cases demonstrating that the bug is
+      fixed.

@@ -67,6 +67,7 @@ TEST(DecodePackageHeaderInfo, goodPath)
     EXPECT_EQ(pkgHeader.package_version_string_length,
               packageVersionStr.size());
     std::string packageVersionString(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(packageVersion.ptr),
         packageVersion.length);
     EXPECT_EQ(packageVersionString, packageVersionStr);
@@ -220,6 +221,7 @@ TEST(DecodeFirmwareDeviceIdRecord, goodPath)
 
     EXPECT_EQ(outCompImageSetVersionStr.length, imageSetVersionStr.size());
     std::string compImageSetVersionStr(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outCompImageSetVersionStr.ptr),
         outCompImageSetVersionStr.length);
     EXPECT_EQ(compImageSetVersionStr, imageSetVersionStr);
@@ -310,6 +312,7 @@ TEST(DecodeFirmwareDeviceIdRecord, goodPathNofwDevicePkgData)
 
     EXPECT_EQ(outCompImageSetVersionStr.length, imageSetVersionStr.size());
     std::string compImageSetVersionStr(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outCompImageSetVersionStr.ptr),
         outCompImageSetVersionStr.length);
     EXPECT_EQ(compImageSetVersionStr, imageSetVersionStr);
@@ -517,6 +520,7 @@ TEST(DecodeDescriptors, goodPath3Descriptors)
             EXPECT_EQ(descriptorTitleStrType, PLDM_STR_TYPE_ASCII);
             EXPECT_EQ(descriptorTitleStr.length, vendorTitle.size());
             std::string vendorTitleStr(
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                 reinterpret_cast<const char*>(descriptorTitleStr.ptr),
                 descriptorTitleStr.length);
             EXPECT_EQ(vendorTitleStr, vendorTitle);
@@ -694,6 +698,7 @@ TEST(DecodeComponentImageInfo, goodPath)
     EXPECT_EQ(outCompVersionStr.length,
               outCompImageInfo.comp_version_string_length);
     std::string componentVersionString(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outCompVersionStr.ptr),
         outCompVersionStr.length);
     EXPECT_EQ(componentVersionString, compVersionStr);
@@ -790,6 +795,7 @@ TEST(DecodeComponentImageInfo, errorPaths)
 TEST(QueryDeviceIdentifiers, goodPathEncodeRequest)
 {
     std::array<uint8_t, sizeof(pldm_msg_hdr)> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
 
     uint8_t instanceId = 0x01;
@@ -811,6 +817,7 @@ TEST(QueryDeviceIdentifiers, goodPathDecodeResponse)
                             sizeof(struct pldm_query_device_identifiers_resp) +
                             descriptorDataLen>
         responseMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto inResp = reinterpret_cast<struct pldm_query_device_identifiers_resp*>(
         responseMsg.data() + hdrSize);
 
@@ -823,6 +830,7 @@ TEST(QueryDeviceIdentifiers, goodPathDecodeResponse)
                     sizeof(struct pldm_query_device_identifiers_resp),
                 descriptorDataLen, 0xff);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     uint8_t completionCode = PLDM_SUCCESS;
     uint32_t deviceIdentifiersLen = 0;
@@ -848,6 +856,7 @@ TEST(QueryDeviceIdentifiers, goodPathDecodeResponse)
 TEST(GetFirmwareParameters, goodPathEncodeRequest)
 {
     std::array<uint8_t, sizeof(pldm_msg_hdr)> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
     uint8_t instanceId = 0x01;
 
@@ -913,6 +922,7 @@ TEST(GetFirmwareParameters, decodeResponse)
             0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x34};
 
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getFwParamsResponse.data());
     pldm_get_firmware_parameters_resp outResp{};
     variable_field outActiveCompImageSetVersion{};
@@ -935,10 +945,12 @@ TEST(GetFirmwareParameters, decodeResponse)
     EXPECT_EQ(outResp.pending_comp_image_set_ver_str_len,
               pendingCompImageSetVersion.size());
     std::string activeCompImageSetVersionStr(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outActiveCompImageSetVersion.ptr),
         outActiveCompImageSetVersion.length);
     EXPECT_EQ(activeCompImageSetVersionStr, activeCompImageSetVersion);
     std::string pendingCompImageSetVersionStr(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outPendingCompImageSetVersion.ptr),
         outPendingCompImageSetVersion.length);
     EXPECT_EQ(pendingCompImageSetVersionStr, pendingCompImageSetVersion);
@@ -971,6 +983,7 @@ TEST(GetFirmwareParameters, decodeResponseZeroCompCount)
             0x6f, 0x6e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x32};
 
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getFwParamsResponse.data());
     pldm_get_firmware_parameters_resp outResp{};
     variable_field outActiveCompImageSetVersion{};
@@ -993,10 +1006,12 @@ TEST(GetFirmwareParameters, decodeResponseZeroCompCount)
     EXPECT_EQ(outResp.pending_comp_image_set_ver_str_len,
               pendingCompImageSetVersion.size());
     std::string activeCompImageSetVersionStr(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outActiveCompImageSetVersion.ptr),
         outActiveCompImageSetVersion.length);
     EXPECT_EQ(activeCompImageSetVersionStr, activeCompImageSetVersion);
     std::string pendingCompImageSetVersionStr(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outPendingCompImageSetVersion.ptr),
         outPendingCompImageSetVersion.length);
     EXPECT_EQ(pendingCompImageSetVersionStr, pendingCompImageSetVersion);
@@ -1025,6 +1040,7 @@ TEST(GetFirmwareParameters,
                             0x53, 0x74, 0x72, 0x69, 0x6e, 0x67};
 
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getFwParamsResponse.data());
     pldm_get_firmware_parameters_resp outResp{};
     variable_field outActiveCompImageSetVersion{};
@@ -1047,6 +1063,7 @@ TEST(GetFirmwareParameters,
               PLDM_STR_TYPE_UNKNOWN);
     EXPECT_EQ(outResp.pending_comp_image_set_ver_str_len, 0);
     std::string activeCompImageSetVersionStr(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const char*>(outActiveCompImageSetVersion.ptr),
         outActiveCompImageSetVersion.length);
     EXPECT_EQ(activeCompImageSetVersionStr, activeCompImageSetVersion);
@@ -1062,6 +1079,7 @@ TEST(GetFirmwareParameters, decodeResponseErrorCompletionCode)
         getFwParamsResponse{0x00, 0x00, 0x00, 0x01};
 
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getFwParamsResponse.data());
     pldm_get_firmware_parameters_resp outResp{};
     variable_field outActiveCompImageSetVersion{};
@@ -1086,6 +1104,7 @@ TEST(GetFirmwareParameters, errorPathdecodeResponse)
         0x00, 0x00, 0x00, 0x06, 0x0e, 0x00, 0x00};
 
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(invalidGetFwParamsResponse1.data());
     pldm_get_firmware_parameters_resp outResp{};
     variable_field outActiveCompImageSetVersion{};
@@ -1141,6 +1160,7 @@ TEST(GetFirmwareParameters, errorPathdecodeResponse)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
     responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(invalidGetFwParamsResponse2.data());
     rc = decode_get_firmware_parameters_resp(
         responseMsg, invalidGetFwParamsResponse2.size() - hdrSize, &outResp,
@@ -1154,6 +1174,7 @@ TEST(GetFirmwareParameters, errorPathdecodeResponse)
         0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x01, 0x0e, 0x01, 0x00};
     responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(invalidGetFwParamsResponse3.data());
     rc = decode_get_firmware_parameters_resp(
         responseMsg, invalidGetFwParamsResponse3.size() - hdrSize, &outResp,
@@ -1167,6 +1188,7 @@ TEST(GetFirmwareParameters, errorPathdecodeResponse)
         0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x01, 0x0e, 0x06, 0x0e};
     responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(invalidGetFwParamsResponse4.data());
     rc = decode_get_firmware_parameters_resp(
         responseMsg, invalidGetFwParamsResponse4.size() - hdrSize, &outResp,
@@ -1179,6 +1201,7 @@ TEST(GetFirmwareParameters, errorPathdecodeResponse)
         0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x01, 0x0e, 0x01, 0x0e};
     responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(invalidGetFwParamsResponse5.data());
     rc = decode_get_firmware_parameters_resp(
         responseMsg, invalidGetFwParamsResponse5.size() - hdrSize, &outResp,
@@ -1210,6 +1233,7 @@ TEST(GetFirmwareParameters, goodPathDecodeComponentParameterEntry)
     std::array<uint8_t, entryLength> entry{};
 
     auto inEntry =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<struct pldm_component_parameter_entry*>(entry.data());
 
     inEntry->comp_classification = htole16(compClassification);
@@ -1283,6 +1307,7 @@ TEST(QueryDownstreamDevices, goodPathEncodeRequest)
 {
     constexpr uint8_t instanceId = 1;
     std::array<uint8_t, sizeof(pldm_msg_hdr)> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
 
     auto rc = encode_query_downstream_devices_req(instanceId, requestPtr);
@@ -1326,9 +1351,9 @@ TEST(QueryDownstreamDevices, goodPathDecodeResponse)
 
     struct pldm_msgbuf _buf;
     struct pldm_msgbuf* buf = &_buf;
-    rc = pldm_msgbuf_init_cc(buf, 0, responseMsg.data() + hdrSize,
-                             responseMsg.size() - hdrSize);
-    EXPECT_EQ(rc, PLDM_SUCCESS);
+    rc = pldm_msgbuf_init_errno(buf, 0, responseMsg.data() + hdrSize,
+                                responseMsg.size() - hdrSize);
+    EXPECT_EQ(rc, 0);
 
     pldm_msgbuf_insert_uint8(buf, completion_code_resp);
     pldm_msgbuf_insert_uint8(buf, downstream_device_update_supported_resp);
@@ -1336,6 +1361,7 @@ TEST(QueryDownstreamDevices, goodPathDecodeResponse)
     pldm_msgbuf_insert_uint16(buf, max_number_of_downstream_devices_resp);
     pldm_msgbuf_insert_uint32(buf, capabilities_resp.value);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_query_downstream_devices_resp resp_data;
 
@@ -1373,9 +1399,9 @@ TEST(QueryDownstreamDevices, decodeRequestUndefinedValue)
 
     struct pldm_msgbuf _buf;
     struct pldm_msgbuf* buf = &_buf;
-    rc = pldm_msgbuf_init_cc(buf, 0, responseMsg.data() + hdrSize,
-                             responseMsg.size() - hdrSize);
-    EXPECT_EQ(rc, PLDM_SUCCESS);
+    rc = pldm_msgbuf_init_errno(buf, 0, responseMsg.data() + hdrSize,
+                                responseMsg.size() - hdrSize);
+    EXPECT_EQ(rc, 0);
 
     pldm_msgbuf_insert_uint8(buf, completion_code_resp);
     pldm_msgbuf_insert_uint8(buf, downstream_device_update_supported_resp);
@@ -1383,6 +1409,7 @@ TEST(QueryDownstreamDevices, decodeRequestUndefinedValue)
     pldm_msgbuf_insert_uint16(buf, max_number_of_downstream_devices_resp);
     pldm_msgbuf_insert_uint32(buf, capabilities_resp.value);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_query_downstream_devices_resp resp_data;
 
@@ -1414,9 +1441,9 @@ TEST(QueryDownstreamDevices, decodeRequestErrorBufSize)
 
     struct pldm_msgbuf _buf;
     struct pldm_msgbuf* buf = &_buf;
-    rc = pldm_msgbuf_init_cc(buf, 0, responseMsg.data() + hdrSize,
-                             responseMsg.size() - hdrSize);
-    EXPECT_EQ(rc, PLDM_SUCCESS);
+    rc = pldm_msgbuf_init_errno(buf, 0, responseMsg.data() + hdrSize,
+                                responseMsg.size() - hdrSize);
+    EXPECT_EQ(rc, 0);
 
     pldm_msgbuf_insert_uint8(buf, completion_code_resp);
     pldm_msgbuf_insert_uint8(buf, downstream_device_update_supported_resp);
@@ -1425,6 +1452,7 @@ TEST(QueryDownstreamDevices, decodeRequestErrorBufSize)
     // Inject error value
     pldm_msgbuf_insert_uint16(buf, (uint16_t)capabilities_resp.value);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_query_downstream_devices_resp resp_data;
 
@@ -1444,6 +1472,7 @@ TEST(QueryDownstreamIdentifiers, goodPathEncodeRequest)
     constexpr size_t payload_length =
         PLDM_QUERY_DOWNSTREAM_IDENTIFIERS_REQ_BYTES;
     std::array<uint8_t, hdrSize + payload_length> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
 
     auto rc = encode_query_downstream_identifiers_req(
@@ -1468,6 +1497,7 @@ TEST(QueryDownstreamIdentifiers, encodeRequestInvalidErrorPaths)
     constexpr size_t payload_length =
         PLDM_QUERY_DOWNSTREAM_IDENTIFIERS_REQ_BYTES;
     std::array<uint8_t, hdrSize + payload_length> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
 
     auto rc = encode_query_downstream_identifiers_req(
@@ -1507,9 +1537,9 @@ TEST(QueryDownstreamIdentifiers, goodPathDecodeResponse)
 
     struct pldm_msgbuf _buf;
     struct pldm_msgbuf* buf = &_buf;
-    rc = pldm_msgbuf_init_cc(buf, 0, responseMsg.data() + hdrSize,
-                             responseMsg.size() - hdrSize);
-    EXPECT_EQ(rc, PLDM_SUCCESS);
+    rc = pldm_msgbuf_init_errno(buf, 0, responseMsg.data() + hdrSize,
+                                responseMsg.size() - hdrSize);
+    EXPECT_EQ(rc, 0);
 
     pldm_msgbuf_insert_uint8(buf, complition_code_resp);
     pldm_msgbuf_insert_uint32(buf, next_data_transfer_handle_resp);
@@ -1524,6 +1554,7 @@ TEST(QueryDownstreamIdentifiers, goodPathDecodeResponse)
                     PLDM_QUERY_DOWNSTREAM_IDENTIFIERS_RESP_MIN_LEN,
                 downstreamDevicesLen, 0xff);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_query_downstream_identifiers_resp resp_data = {};
     struct variable_field downstreamDevices = {};
@@ -1554,6 +1585,7 @@ TEST(QueryDownstreamIdentifiers, goodPathDecodeResponse)
 TEST(QueryDownstreamIdentifiers, decodeRequestErrorPaths)
 {
     std::array<uint8_t, hdrSize + sizeof(uint8_t)> responseMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_query_downstream_identifiers_resp resp_data = {};
     struct variable_field downstreamDevices = {};
@@ -1599,9 +1631,9 @@ TEST(QueryDownstreamIdentifiers, decodeRequestErrorDownstreamDevicesSize)
 
     struct pldm_msgbuf _buf;
     struct pldm_msgbuf* buf = &_buf;
-    rc = pldm_msgbuf_init_cc(buf, 0, responseMsg.data() + hdrSize,
-                             responseMsg.size() - hdrSize);
-    EXPECT_EQ(rc, PLDM_SUCCESS);
+    rc = pldm_msgbuf_init_errno(buf, 0, responseMsg.data() + hdrSize,
+                                responseMsg.size() - hdrSize);
+    EXPECT_EQ(rc, 0);
 
     pldm_msgbuf_insert_uint8(buf, complition_code_resp);
     pldm_msgbuf_insert_uint32(buf, next_data_transfer_handle_resp);
@@ -1616,30 +1648,15 @@ TEST(QueryDownstreamIdentifiers, decodeRequestErrorDownstreamDevicesSize)
                     PLDM_QUERY_DOWNSTREAM_IDENTIFIERS_RESP_MIN_LEN,
                 actualDownstreamDevicesLen, 0xff);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_query_downstream_identifiers_resp resp_data = {};
     struct variable_field downstreamDevices = {};
 
-    /** In test mode, this will trigger an assert failure and cause the unit
-     * test to fail if only testing by the rc. Use ASSERT_DEATH to test this
-     * scenario.
-     *
-     *  The 1st parameter is the function under test.
-     *  The 2nd parameter compares the output of the program.
-     */
-#ifdef NDEBUG
     EXPECT_NE(decode_query_downstream_identifiers_resp(
                   response, responseMsg.size() - hdrSize, &resp_data,
                   &downstreamDevices),
               PLDM_SUCCESS);
-#else
-    EXPECT_DEATH(
-        decode_query_downstream_identifiers_resp(
-            response, responseMsg.size() - hdrSize, &resp_data,
-            &downstreamDevices),
-        // This error doesn't output any error message, leave it be empty
-        "");
-#endif
 }
 #endif
 
@@ -1662,9 +1679,9 @@ TEST(QueryDownstreamIdentifiers, decodeRequestErrorBufSize)
 
     struct pldm_msgbuf _buf;
     struct pldm_msgbuf* buf = &_buf;
-    rc = pldm_msgbuf_init_cc(buf, 0, responseMsg.data() + hdrSize,
-                             responseMsg.size() - hdrSize);
-    EXPECT_EQ(rc, PLDM_SUCCESS);
+    rc = pldm_msgbuf_init_errno(buf, 0, responseMsg.data() + hdrSize,
+                                responseMsg.size() - hdrSize);
+    EXPECT_EQ(rc, 0);
 
     pldm_msgbuf_insert_uint8(buf, complition_code_resp);
     pldm_msgbuf_insert_uint32(buf, next_data_transfer_handle_resp);
@@ -1673,6 +1690,7 @@ TEST(QueryDownstreamIdentifiers, decodeRequestErrorBufSize)
     // Inject error buffer size
     pldm_msgbuf_insert_uint8(buf, (uint8_t)number_of_downstream_devices_resp);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_query_downstream_identifiers_resp resp_data = {};
     struct variable_field downstreamDevices = {};
@@ -1693,6 +1711,7 @@ TEST(GetDownstreamFirmwareParameters, goodPathEncodeRequest)
     constexpr size_t payload_length =
         PLDM_GET_DOWNSTREAM_FIRMWARE_PARAMS_REQ_BYTES;
     std::array<uint8_t, sizeof(pldm_msg_hdr) + payload_length> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
 
     auto rc = encode_get_downstream_firmware_params_req(
@@ -1717,6 +1736,7 @@ TEST(GetDownstreamFirmwareParameters, encodeRequestInvalidTransferOperationFlag)
     constexpr size_t payload_length =
         PLDM_GET_DOWNSTREAM_FIRMWARE_PARAMS_REQ_BYTES;
     std::array<uint8_t, sizeof(pldm_msg_hdr) + payload_length> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
 
     auto rc = encode_get_downstream_firmware_params_req(
@@ -1739,6 +1759,7 @@ TEST(GetDownstreamFirmwareParameters, encodeRequestErrorBufSize)
         1 /* inject erro length*/;
 
     std::array<uint8_t, sizeof(pldm_msg_hdr) + payload_length> requestMsg{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestPtr = reinterpret_cast<pldm_msg*>(requestMsg.data());
 
     auto rc = encode_get_downstream_firmware_params_req(
@@ -1791,12 +1812,14 @@ TEST(GetDownstreamFirmwareParameters, goodPathDecodeResponse)
     std::fill_n(responseMsg.data() + hdrSize +
                     PLDM_GET_DOWNSTREAM_FIRMWARE_PARAMS_RESP_MIN_LEN,
                 downstreamDeviceParamTableLen, 0xff);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto table = reinterpret_cast<pldm_component_parameter_entry*>(
         responseMsg.data() + hdrSize +
         PLDM_GET_DOWNSTREAM_FIRMWARE_PARAMS_RESP_MIN_LEN);
     table->active_comp_ver_str_len = activeComponentVersionStringLength;
     table->pending_comp_ver_str_len = pendingComponentVersionStringLength;
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_get_downstream_firmware_params_resp resp_data = {};
     struct variable_field downstreamDeviceParamTable = {};
@@ -1867,6 +1890,7 @@ TEST(GetDownstreamFirmwareParameters, decodeResponseInvalidLength)
                 downstreamDeviceParamTableLen - 1 /* inject error length*/,
                 0xff);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto response = reinterpret_cast<pldm_msg*>(responseMsg.data());
     struct pldm_get_downstream_firmware_params_resp resp_data = {};
     struct variable_field downstreamDeviceParamTable = {};
@@ -1879,24 +1903,9 @@ TEST(GetDownstreamFirmwareParameters, decodeResponseInvalidLength)
     pldm_downstream_device_parameter_entry entry{};
     variable_field versions{};
 
-    /** In test mode, this will trigger an assert failure and cause the unit
-     * test to fail if only testing by the rc. Use ASSERT_DEATH to test this
-     * scenario.
-     *
-     *  The 1st parameter is the function under test.
-     *  The 2nd parameter compares the output of the program.
-     */
-#ifdef NDEBUG
     EXPECT_NE(decode_downstream_device_parameter_table_entry(
                   &downstreamDeviceParamTable, &entry, &versions),
               0);
-#else
-    EXPECT_DEATH(
-        decode_downstream_device_parameter_table_entry(
-            &downstreamDeviceParamTable, &entry, &versions),
-        // This error doesn't output any error message, leave it be empty
-        "");
-#endif
 }
 #endif
 
@@ -1978,7 +1987,9 @@ TEST(GetDownstreamFirmwareParameters, goodPathDecodeDownstreamDeviceParamTable)
     // Further decode the version strings
     rc = decode_downstream_device_parameter_table_entry_versions(
         &versions, &entry_version.entry, entry_version.active_comp_ver_str,
-        entry_version.pending_comp_ver_str);
+        sizeof(entry_version.active_comp_ver_str),
+        entry_version.pending_comp_ver_str,
+        sizeof(entry_version.pending_comp_ver_str));
     struct pldm_downstream_device_parameter_entry entry = entry_version.entry;
     EXPECT_EQ(rc, 0);
 
@@ -2030,6 +2041,7 @@ TEST(GetDownstreamFirmwareParameters, goodPathDecodeDownstreamTableVersions)
     constexpr char versionsStr[] = {'1', '2', '3', '4', '5', '6', '7', '8',
                                     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
     const struct variable_field versions = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         .ptr = reinterpret_cast<const uint8_t*>(versionsStr),
         .length = sizeof(versionsStr)};
 
@@ -2039,7 +2051,9 @@ TEST(GetDownstreamFirmwareParameters, goodPathDecodeDownstreamTableVersions)
 
     int rc = decode_downstream_device_parameter_table_entry_versions(
         &versions, &entryVersion.entry, entryVersion.active_comp_ver_str,
-        entryVersion.pending_comp_ver_str);
+        sizeof(entryVersion.active_comp_ver_str),
+        entryVersion.pending_comp_ver_str,
+        sizeof(entryVersion.pending_comp_ver_str));
 
     EXPECT_EQ(rc, 0);
     EXPECT_EQ(0, memcmp(entryVersion.active_comp_ver_str, versions.ptr,
@@ -2068,6 +2082,7 @@ TEST(GetDownstreamFirmwareParameters, decodeInvalidDownstreamTableVersions)
     constexpr char versionsStr[] = {'1', '2', '3', '4', '5', '6', '7', '8',
                                     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
     const struct variable_field versions = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         .ptr = reinterpret_cast<const uint8_t*>(versionsStr),
         .length = sizeof(versionsStr)};
 
@@ -2075,7 +2090,9 @@ TEST(GetDownstreamFirmwareParameters, decodeInvalidDownstreamTableVersions)
 
     int rc = decode_downstream_device_parameter_table_entry_versions(
         &versions, nullptr, entryVersion.active_comp_ver_str,
-        entryVersion.pending_comp_ver_str);
+        sizeof(entryVersion.active_comp_ver_str),
+        entryVersion.pending_comp_ver_str,
+        sizeof(entryVersion.pending_comp_ver_str));
     EXPECT_EQ(rc, -EINVAL);
 }
 #endif
@@ -2090,6 +2107,7 @@ TEST(GetDownstreamFirmwareParameters, decodeOverflowDownstreamTableVersions)
     constexpr char versionsStr[] = {'1', '2', '3', '4', '5', '6', '7', '8',
                                     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
     const struct variable_field versions = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         .ptr = reinterpret_cast<const uint8_t*>(versionsStr),
         .length = sizeof(versionsStr) - 1 // Inject error length
     };
@@ -2101,7 +2119,9 @@ TEST(GetDownstreamFirmwareParameters, decodeOverflowDownstreamTableVersions)
     EXPECT_EQ(decode_downstream_device_parameter_table_entry_versions(
                   &versions, &entryVersion.entry,
                   entryVersion.active_comp_ver_str,
-                  entryVersion.pending_comp_ver_str),
+                  sizeof(entryVersion.active_comp_ver_str),
+                  entryVersion.pending_comp_ver_str,
+                  sizeof(entryVersion.pending_comp_ver_str)),
               -EOVERFLOW);
 }
 #endif
@@ -2118,12 +2138,14 @@ TEST(RequestUpdate, goodPathEncodeRequest)
         static_cast<uint8_t>(compImgSetVerStr.size());
     variable_field compImgSetVerStrInfo{};
     compImgSetVerStrInfo.ptr =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const uint8_t*>(compImgSetVerStr.data());
     compImgSetVerStrInfo.length = compImgSetVerStrLen;
 
     std::array<uint8_t, hdrSize + sizeof(struct pldm_request_update_req) +
                             compImgSetVerStrLen>
         request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_request_update_req(
@@ -2152,12 +2174,14 @@ TEST(RequestUpdate, errorPathEncodeRequest)
     uint8_t compImgSetVerStrLen = static_cast<uint8_t>(compImgSetVerStr.size());
     variable_field compImgSetVerStrInfo{};
     compImgSetVerStrInfo.ptr =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const uint8_t*>(compImgSetVerStr.data());
     compImgSetVerStrInfo.length = compImgSetVerStrLen;
 
     std::array<uint8_t, hdrSize + sizeof(struct pldm_request_update_req) +
                             compImgSetVerStr.size()>
         request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_request_update_req(
@@ -2175,6 +2199,7 @@ TEST(RequestUpdate, errorPathEncodeRequest)
         sizeof(struct pldm_request_update_req) + compImgSetVerStrLen);
     EXPECT_EQ(rc, PLDM_ERROR_INVALID_DATA);
     compImgSetVerStrInfo.ptr =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const uint8_t*>(compImgSetVerStr.data());
 
     rc = encode_request_update_req(
@@ -2241,6 +2266,7 @@ TEST(RequestUpdate, goodPathDecodeResponse)
         requestUpdateResponse1{0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x01};
 
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(requestUpdateResponse1.data());
     uint8_t outCompletionCode = 0;
     uint16_t outFdMetaDataLen = 0;
@@ -2261,6 +2287,7 @@ TEST(RequestUpdate, goodPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(outCompletionCode)>
         requestUpdateResponse2{0x00, 0x00, 0x00, 0x81};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(requestUpdateResponse2.data());
     rc = decode_request_update_resp(
         responseMsg2, requestUpdateResponse2.size() - hdrSize,
@@ -2276,6 +2303,7 @@ TEST(RequestUpdate, errorPathDecodeResponse)
         requestUpdateResponse{0x00, 0x00, 0x00, 0x00, 0x00, 0x04};
 
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(requestUpdateResponse.data());
     uint8_t outCompletionCode = 0;
     uint16_t outFdMetaDataLen = 0;
@@ -2320,12 +2348,14 @@ TEST(PassComponentTable, goodPathEncodeRequest)
     constexpr std::string_view compVerStr = "0penBmcv1.1";
     constexpr uint8_t compVerStrLen = static_cast<uint8_t>(compVerStr.size());
     variable_field compVerStrInfo{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     compVerStrInfo.ptr = reinterpret_cast<const uint8_t*>(compVerStr.data());
     compVerStrInfo.length = compVerStrLen;
 
     std::array<uint8_t,
                hdrSize + sizeof(pldm_pass_component_table_req) + compVerStrLen>
         request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_pass_component_table_req(
@@ -2352,12 +2382,14 @@ TEST(PassComponentTable, errorPathEncodeRequest)
     constexpr std::string_view compVerStr = "0penBmcv1.1";
     constexpr uint8_t compVerStrLen = static_cast<uint8_t>(compVerStr.size());
     variable_field compVerStrInfo{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     compVerStrInfo.ptr = reinterpret_cast<const uint8_t*>(compVerStr.data());
     compVerStrInfo.length = compVerStrLen;
 
     std::array<uint8_t,
                hdrSize + sizeof(pldm_pass_component_table_req) + compVerStrLen>
         request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_pass_component_table_req(
@@ -2374,6 +2406,7 @@ TEST(PassComponentTable, errorPathEncodeRequest)
         compVerStrLen, &compVerStrInfo, requestMsg,
         sizeof(pldm_pass_component_table_req) + compVerStrLen);
     EXPECT_EQ(rc, PLDM_ERROR_INVALID_DATA);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     compVerStrInfo.ptr = reinterpret_cast<const uint8_t*>(compVerStr.data());
 
     rc = encode_pass_component_table_req(
@@ -2425,6 +2458,7 @@ TEST(PassComponentTable, goodPathDecodeResponse)
                          hdrSize + sizeof(pldm_pass_component_table_resp)>
         passCompTableResponse1{0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(passCompTableResponse1.data());
 
     uint8_t completionCode = 0;
@@ -2444,6 +2478,7 @@ TEST(PassComponentTable, goodPathDecodeResponse)
                          hdrSize + sizeof(pldm_pass_component_table_resp)>
         passCompTableResponse2{0x00, 0x00, 0x00, 0x00, 0x00, 0xd0};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(passCompTableResponse2.data());
     rc = decode_pass_component_table_resp(
         responseMsg2, sizeof(pldm_pass_component_table_resp), &completionCode,
@@ -2458,6 +2493,7 @@ TEST(PassComponentTable, goodPathDecodeResponse)
                          hdrSize + sizeof(pldm_pass_component_table_resp)>
         passCompTableResponse3{0x00, 0x00, 0x00, 0x80};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(passCompTableResponse3.data());
 
     rc = decode_pass_component_table_resp(
@@ -2474,6 +2510,7 @@ TEST(PassComponentTable, errorPathDecodeResponse)
                          hdrSize + sizeof(pldm_pass_component_table_resp) - 1>
         passCompTableResponse1{0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(passCompTableResponse1.data());
 
     uint8_t completionCode = 0;
@@ -2513,6 +2550,7 @@ TEST(PassComponentTable, errorPathDecodeResponse)
                          hdrSize + sizeof(pldm_pass_component_table_resp)>
         passCompTableResponse2{0x00, 0x00, 0x00, 0x00, 0x02, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(passCompTableResponse2.data());
     rc = decode_pass_component_table_resp(
         responseMsg2, sizeof(pldm_pass_component_table_resp), &completionCode,
@@ -2523,6 +2561,7 @@ TEST(PassComponentTable, errorPathDecodeResponse)
                          hdrSize + sizeof(pldm_pass_component_table_resp)>
         passCompTableResponse3{0x00, 0x00, 0x00, 0x00, 0x00, 0x0c};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(passCompTableResponse3.data());
     rc = decode_pass_component_table_resp(
         responseMsg3, sizeof(pldm_pass_component_table_resp), &completionCode,
@@ -2533,6 +2572,7 @@ TEST(PassComponentTable, errorPathDecodeResponse)
                          hdrSize + sizeof(pldm_pass_component_table_resp)>
         passCompTableResponse4{0x00, 0x00, 0x00, 0x00, 0x00, 0xf0};
     auto responseMsg4 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(passCompTableResponse4.data());
     rc = decode_pass_component_table_resp(
         responseMsg4, sizeof(pldm_pass_component_table_resp), &completionCode,
@@ -2551,12 +2591,14 @@ TEST(UpdateComponent, goodPathEncodeRequest)
     constexpr std::string_view compVerStr = "OpenBmcv2.2";
     constexpr uint8_t compVerStrLen = static_cast<uint8_t>(compVerStr.size());
     variable_field compVerStrInfo{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     compVerStrInfo.ptr = reinterpret_cast<const uint8_t*>(compVerStr.data());
     compVerStrInfo.length = compVerStrLen;
 
     std::array<uint8_t,
                hdrSize + sizeof(pldm_update_component_req) + compVerStrLen>
         request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_update_component_req(
@@ -2586,12 +2628,14 @@ TEST(UpdateComponent, errorPathEncodeRequest)
     constexpr std::string_view compVerStr = "OpenBmcv2.2";
     constexpr uint8_t compVerStrLen = static_cast<uint8_t>(compVerStr.size());
     variable_field compVerStrInfo{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     compVerStrInfo.ptr = reinterpret_cast<const uint8_t*>(compVerStr.data());
     compVerStrInfo.length = compVerStrLen;
 
     std::array<uint8_t,
                hdrSize + sizeof(pldm_update_component_req) + compVerStrLen>
         request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_update_component_req(
@@ -2608,6 +2652,7 @@ TEST(UpdateComponent, errorPathEncodeRequest)
         PLDM_STR_TYPE_ASCII, compVerStrLen, &compVerStrInfo, requestMsg,
         sizeof(pldm_update_component_req) + compVerStrLen);
     EXPECT_EQ(rc, PLDM_ERROR_INVALID_DATA);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     compVerStrInfo.ptr = reinterpret_cast<const uint8_t*>(compVerStr.data());
 
     rc = encode_update_component_req(
@@ -2661,6 +2706,7 @@ TEST(UpdateComponent, goodPathDecodeResponse)
         updateComponentResponse1{0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                  0x01, 0x00, 0x00, 0x00, 0x64, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(updateComponentResponse1.data());
 
     uint8_t completionCode = 0;
@@ -2687,6 +2733,7 @@ TEST(UpdateComponent, goodPathDecodeResponse)
         updateComponentResponse2{0x00, 0x00, 0x00, 0x00, 0x01, 0x09,
                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(updateComponentResponse2.data());
     rc = decode_update_component_resp(
         responseMsg2, sizeof(pldm_update_component_resp), &completionCode,
@@ -2703,6 +2750,7 @@ TEST(UpdateComponent, goodPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(pldm_update_component_resp)>
         updateComponentResponse3{0x00, 0x00, 0x00, 0x80};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(updateComponentResponse3.data());
 
     rc = decode_update_component_resp(
@@ -2721,6 +2769,7 @@ TEST(UpdateComponent, errorPathDecodeResponse)
         updateComponentResponse1{0x00, 0x00, 0x00, 0x00, 0x01, 0x09,
                                  0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(updateComponentResponse1.data());
 
     uint8_t completionCode = 0;
@@ -2781,6 +2830,7 @@ TEST(UpdateComponent, errorPathDecodeResponse)
         updateComponentResponse2{0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
                                  0x01, 0x00, 0x00, 0x00, 0x64, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(updateComponentResponse2.data());
     rc = decode_update_component_resp(
         responseMsg2, sizeof(pldm_update_component_resp), &completionCode,
@@ -2792,6 +2842,7 @@ TEST(UpdateComponent, errorPathDecodeResponse)
         updateComponentResponse3{0x00, 0x00, 0x00, 0x00, 0x00, 0x0c,
                                  0x01, 0x00, 0x00, 0x00, 0x64, 0x00};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(updateComponentResponse3.data());
     rc = decode_update_component_resp(
         responseMsg3, sizeof(pldm_update_component_resp), &completionCode,
@@ -2803,6 +2854,7 @@ TEST(UpdateComponent, errorPathDecodeResponse)
         updateComponentResponse4{0x00, 0x00, 0x00, 0x00, 0x00, 0xf0,
                                  0x01, 0x00, 0x00, 0x00, 0x64, 0x00};
     auto responseMsg4 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(updateComponentResponse4.data());
     rc = decode_update_component_resp(
         responseMsg4, sizeof(pldm_update_component_resp), &completionCode,
@@ -2819,6 +2871,7 @@ TEST(RequestFirmwareData, goodPathDecodeRequest)
                          hdrSize + sizeof(pldm_request_firmware_data_req)>
         reqFWDataReq{0x00, 0x00, 0x00, 0x2c, 0x01, 0x00,
                      0x00, 0xff, 0x00, 0x00, 0x00};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<const pldm_msg*>(reqFWDataReq.data());
 
     uint32_t outOffset = 0;
@@ -2838,6 +2891,7 @@ TEST(RequestFirmwareData, errorPathDecodeRequest)
                          hdrSize + sizeof(pldm_request_firmware_data_req)>
         reqFWDataReq{0x00, 0x00, 0x00, 0x2c, 0x01, 0x00,
                      0x00, 0x1f, 0x00, 0x00, 0x00};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<const pldm_msg*>(reqFWDataReq.data());
 
     uint32_t outOffset = 0;
@@ -2886,6 +2940,7 @@ TEST(RequestFirmwareData, goodPathEncodeResponse)
                            0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14,
                            0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c,
                            0x1d, 0x1e, 0x1f, 0x20};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto responseMsg1 = reinterpret_cast<pldm_msg*>(reqFwDataResponse1.data());
     auto rc = encode_request_firmware_data_resp(
         instanceId, completionCode, responseMsg1,
@@ -2897,6 +2952,7 @@ TEST(RequestFirmwareData, goodPathEncodeResponse)
         outReqFwDataResponse2{0x03, 0x05, 0x15, 0x82};
     std::array<uint8_t, hdrSize + sizeof(completionCode)> reqFwDataResponse2{
         0x00, 0x00, 0x00, 0x00};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto responseMsg2 = reinterpret_cast<pldm_msg*>(reqFwDataResponse2.data());
     rc = encode_request_firmware_data_resp(
         instanceId, PLDM_FWUP_DATA_OUT_OF_RANGE, responseMsg2,
@@ -2908,6 +2964,7 @@ TEST(RequestFirmwareData, goodPathEncodeResponse)
 TEST(RequestFirmwareData, errorPathEncodeResponse)
 {
     std::array<uint8_t, hdrSize> reqFwDataResponse{0x00, 0x00, 0x00};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto responseMsg = reinterpret_cast<pldm_msg*>(reqFwDataResponse.data());
     auto rc = encode_request_firmware_data_resp(0, PLDM_SUCCESS, nullptr, 0);
     EXPECT_EQ(rc, PLDM_ERROR_INVALID_DATA);
@@ -2922,6 +2979,7 @@ TEST(TransferComplete, goodPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize + sizeof(transferResult)>
         transferCompleteReq1{0x00, 0x00, 0x00, 0x00};
     auto requestMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(transferCompleteReq1.data());
     uint8_t outTransferResult = 0;
 
@@ -2933,6 +2991,7 @@ TEST(TransferComplete, goodPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize + sizeof(transferResult)>
         transferCompleteReq2{0x00, 0x00, 0x00, 0x02};
     auto requestMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(transferCompleteReq2.data());
     rc = decode_transfer_complete_req(requestMsg2, sizeof(transferResult),
                                       &outTransferResult);
@@ -2945,6 +3004,7 @@ TEST(TransferComplete, errorPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize> transferCompleteReq{0x00, 0x00,
                                                                0x00};
     auto requestMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(transferCompleteReq.data());
     uint8_t outTransferResult = 0;
 
@@ -2967,6 +3027,7 @@ TEST(TransferComplete, goodPathEncodeResponse)
     std::array<uint8_t, hdrSize + sizeof(completionCode)>
         transferCompleteResponse1{0x00, 0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(transferCompleteResponse1.data());
     auto rc = encode_transfer_complete_resp(
         instanceId, completionCode, responseMsg1, sizeof(completionCode));
@@ -2978,6 +3039,7 @@ TEST(TransferComplete, goodPathEncodeResponse)
     std::array<uint8_t, hdrSize + sizeof(completionCode)>
         transferCompleteResponse2{0x00, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(transferCompleteResponse2.data());
     rc = encode_transfer_complete_resp(instanceId,
                                        PLDM_FWUP_COMMAND_NOT_EXPECTED,
@@ -2990,6 +3052,7 @@ TEST(TransferComplete, errorPathEncodeResponse)
 {
     std::array<uint8_t, hdrSize> transferCompleteResponse{0x00, 0x00, 0x00};
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(transferCompleteResponse.data());
     auto rc = encode_transfer_complete_resp(0, PLDM_SUCCESS, nullptr, 0);
     EXPECT_EQ(rc, PLDM_ERROR_INVALID_DATA);
@@ -3004,6 +3067,7 @@ TEST(VerifyComplete, goodPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize + sizeof(verifyResult)>
         verifyCompleteReq1{0x00, 0x00, 0x00, 0x00};
     auto requestMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(verifyCompleteReq1.data());
     uint8_t outVerifyResult = 0;
 
@@ -3015,6 +3079,7 @@ TEST(VerifyComplete, goodPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize + sizeof(verifyResult)>
         verifyCompleteReq2{0x00, 0x00, 0x00, 0x03};
     auto requestMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(verifyCompleteReq2.data());
     rc = decode_verify_complete_req(requestMsg2, sizeof(verifyResult),
                                     &outVerifyResult);
@@ -3026,6 +3091,7 @@ TEST(VerifyComplete, errorPathDecodeRequest)
 {
     constexpr std::array<uint8_t, hdrSize> verifyCompleteReq{0x00, 0x00, 0x00};
     auto requestMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(verifyCompleteReq.data());
     uint8_t outVerifyResult = 0;
 
@@ -3048,6 +3114,7 @@ TEST(VerifyComplete, goodPathEncodeResponse)
     std::array<uint8_t, hdrSize + sizeof(completionCode)>
         verifyCompleteResponse1{0x00, 0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(verifyCompleteResponse1.data());
     auto rc = encode_verify_complete_resp(instanceId, completionCode,
                                           responseMsg1, sizeof(completionCode));
@@ -3059,6 +3126,7 @@ TEST(VerifyComplete, goodPathEncodeResponse)
     std::array<uint8_t, hdrSize + sizeof(completionCode)>
         verifyCompleteResponse2{0x00, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(verifyCompleteResponse2.data());
     rc = encode_verify_complete_resp(instanceId, PLDM_FWUP_COMMAND_NOT_EXPECTED,
                                      responseMsg2, sizeof(completionCode));
@@ -3070,6 +3138,7 @@ TEST(VerifyComplete, errorPathEncodeResponse)
 {
     std::array<uint8_t, hdrSize> verifyCompleteResponse{0x00, 0x00, 0x00};
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(verifyCompleteResponse.data());
     auto rc = encode_verify_complete_resp(0, PLDM_SUCCESS, nullptr, 0);
     EXPECT_EQ(rc, PLDM_ERROR_INVALID_DATA);
@@ -3087,6 +3156,7 @@ TEST(ApplyComplete, goodPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize + sizeof(pldm_apply_complete_req)>
         applyCompleteReq1{0x00, 0x00, 0x00, 0x01, 0x30, 0x00};
     auto requestMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(applyCompleteReq1.data());
     uint8_t outApplyResult = 0;
     bitfield16_t outCompActivationModification{};
@@ -3102,6 +3172,7 @@ TEST(ApplyComplete, goodPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize + sizeof(pldm_apply_complete_req)>
         applyCompleteReq2{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto requestMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(applyCompleteReq2.data());
     rc = decode_apply_complete_req(requestMsg2, sizeof(pldm_apply_complete_req),
                                    &outApplyResult,
@@ -3115,6 +3186,7 @@ TEST(ApplyComplete, errorPathDecodeRequest)
 {
     constexpr std::array<uint8_t, hdrSize> applyCompleteReq1{0x00, 0x00, 0x00};
     auto requestMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(applyCompleteReq1.data());
     uint8_t outApplyResult = 0;
     bitfield16_t outCompActivationModification{};
@@ -3139,6 +3211,7 @@ TEST(ApplyComplete, errorPathDecodeRequest)
     constexpr std::array<uint8_t, hdrSize + sizeof(pldm_apply_complete_req)>
         applyCompleteReq2{0x00, 0x00, 0x00, 0x00, 0x01, 0x00};
     auto requestMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(applyCompleteReq2.data());
     rc = decode_apply_complete_req(requestMsg2, sizeof(pldm_apply_complete_req),
                                    &outApplyResult,
@@ -3155,6 +3228,7 @@ TEST(ApplyComplete, goodPathEncodeResponse)
     std::array<uint8_t, hdrSize + sizeof(completionCode)>
         applyCompleteResponse1{0x00, 0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(applyCompleteResponse1.data());
     auto rc = encode_apply_complete_resp(instanceId, completionCode,
                                          responseMsg1, sizeof(completionCode));
@@ -3166,6 +3240,7 @@ TEST(ApplyComplete, goodPathEncodeResponse)
     std::array<uint8_t, hdrSize + sizeof(completionCode)>
         applyCompleteResponse2{0x00, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(applyCompleteResponse2.data());
     rc = encode_apply_complete_resp(instanceId, PLDM_FWUP_COMMAND_NOT_EXPECTED,
                                     responseMsg2, sizeof(completionCode));
@@ -3177,6 +3252,7 @@ TEST(ApplyComplete, errorPathEncodeResponse)
 {
     std::array<uint8_t, hdrSize> applyCompleteResponse{0x00, 0x00, 0x00};
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<pldm_msg*>(applyCompleteResponse.data());
     auto rc = encode_apply_complete_resp(0, PLDM_SUCCESS, nullptr, 0);
     EXPECT_EQ(rc, PLDM_ERROR_INVALID_DATA);
@@ -3190,6 +3266,7 @@ TEST(ActivateFirmware, goodPathEncodeRequest)
     constexpr uint8_t instanceId = 7;
 
     std::array<uint8_t, hdrSize + sizeof(pldm_activate_firmware_req)> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_activate_firmware_req(
@@ -3205,6 +3282,7 @@ TEST(ActivateFirmware, goodPathEncodeRequest)
 TEST(ActivateFirmware, errorPathEncodeRequest)
 {
     std::array<uint8_t, hdrSize + sizeof(pldm_activate_firmware_req)> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_activate_firmware_req(
@@ -3227,6 +3305,7 @@ TEST(ActivateFirmware, goodPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(pldm_activate_firmware_resp)>
         activateFirmwareResponse1{0x00, 0x00, 0x00, 0x00, 0x64, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(activateFirmwareResponse1.data());
 
     uint8_t completionCode = 0;
@@ -3243,6 +3322,7 @@ TEST(ActivateFirmware, goodPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(completionCode)>
         activateFirmwareResponse2{0x00, 0x00, 0x00, 0x85};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(activateFirmwareResponse2.data());
 
     rc = decode_activate_firmware_resp(responseMsg2, sizeof(completionCode),
@@ -3258,6 +3338,7 @@ TEST(ActivateFirmware, errorPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(pldm_activate_firmware_resp)>
         activateFirmwareResponse{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(activateFirmwareResponse.data());
 
     uint8_t completionCode = 0;
@@ -3292,6 +3373,7 @@ TEST(GetStatus, goodPathEncodeRequest)
 {
     constexpr uint8_t instanceId = 8;
     std::array<uint8_t, hdrSize> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_get_status_req(instanceId, requestMsg,
@@ -3305,6 +3387,7 @@ TEST(GetStatus, goodPathEncodeRequest)
 TEST(GetStatus, errorPathEncodeRequest)
 {
     std::array<uint8_t, hdrSize + sizeof(uint8_t)> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_get_status_req(0, nullptr, PLDM_GET_STATUS_REQ_BYTES);
@@ -3321,6 +3404,7 @@ TEST(GetStatus, goodPathDecodeResponse)
         getStatusResponse1{0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x03,
                            0x09, 0x65, 0x05, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse1.data());
 
     uint8_t completionCode = 0;
@@ -3355,6 +3439,7 @@ TEST(GetStatus, goodPathDecodeResponse)
         getStatusResponse2{0x00, 0x00, 0x00, 0x00, 0x04, 0x03, 0x00,
                            0x70, 0x32, 0x05, 0x01, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse2.data());
 
     rc = decode_get_status_resp(
@@ -3375,6 +3460,7 @@ TEST(GetStatus, goodPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(completionCode)>
         getStatusResponse3{0x00, 0x00, 0x00, 0x04};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse3.data());
     rc = decode_get_status_resp(
         responseMsg3, getStatusResponse3.size() - hdrSize, &completionCode,
@@ -3397,6 +3483,7 @@ TEST(GetStatus, errorPathDecodeResponse)
 
     constexpr std::array<uint8_t, hdrSize> getStatusResponse1{0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse1.data());
 
     auto rc = decode_get_status_resp(
@@ -3463,6 +3550,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse2{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse2.data());
     rc = decode_get_status_resp(
         responseMsg2, getStatusResponse2.size() - hdrSize, &completionCode,
@@ -3474,6 +3562,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse3{0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00,
                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse3.data());
     rc = decode_get_status_resp(
         responseMsg3, getStatusResponse3.size() - hdrSize, &completionCode,
@@ -3485,6 +3574,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse4{0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00,
                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg4 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse4.data());
     rc = decode_get_status_resp(
         responseMsg4, getStatusResponse4.size() - hdrSize, &completionCode,
@@ -3496,6 +3586,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse5{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04,
                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg5 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse5.data());
     rc = decode_get_status_resp(
         responseMsg5, getStatusResponse5.size() - hdrSize, &completionCode,
@@ -3507,6 +3598,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse6{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                            0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg6 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse6.data());
     rc = decode_get_status_resp(
         responseMsg6, getStatusResponse6.size() - hdrSize, &completionCode,
@@ -3518,6 +3610,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse7{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                            0x00, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg7 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse7.data());
     rc = decode_get_status_resp(
         responseMsg7, getStatusResponse7.size() - hdrSize, &completionCode,
@@ -3529,6 +3622,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse8{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                            0x00, 0x00, 0xc7, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg8 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse8.data());
     rc = decode_get_status_resp(
         responseMsg8, getStatusResponse8.size() - hdrSize, &completionCode,
@@ -3542,6 +3636,7 @@ TEST(GetStatus, errorPathDecodeResponse)
         getStatusResponse9{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg9 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(getStatusResponse9.data());
     rc = decode_get_status_resp(
         responseMsg9, getStatusResponse9.size() - hdrSize, &completionCode,
@@ -3554,6 +3649,7 @@ TEST(CancelUpdateComponent, goodPathEncodeRequest)
 {
     constexpr uint8_t instanceId = 9;
     std::array<uint8_t, hdrSize> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_cancel_update_component_req(
@@ -3567,6 +3663,7 @@ TEST(CancelUpdateComponent, goodPathEncodeRequest)
 TEST(CancelUpdateComponent, errorPathEncodeRequest)
 {
     std::array<uint8_t, hdrSize + sizeof(uint8_t)> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_cancel_update_component_req(
@@ -3583,6 +3680,7 @@ TEST(CancelUpdateComponent, testGoodDecodeResponse)
     uint8_t completionCode = 0;
     constexpr std::array<uint8_t, hdrSize + sizeof(completionCode)>
         cancelUpdateComponentResponse1{0x00, 0x00, 0x00, 0x00};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto responseMsg1 = reinterpret_cast<const pldm_msg*>(
         cancelUpdateComponentResponse1.data());
     auto rc = decode_cancel_update_component_resp(
@@ -3593,6 +3691,7 @@ TEST(CancelUpdateComponent, testGoodDecodeResponse)
 
     constexpr std::array<uint8_t, hdrSize + sizeof(completionCode)>
         cancelUpdateComponentResponse2{0x00, 0x00, 0x00, 0x86};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto responseMsg2 = reinterpret_cast<const pldm_msg*>(
         cancelUpdateComponentResponse2.data());
     rc = decode_cancel_update_component_resp(
@@ -3608,6 +3707,7 @@ TEST(CancelUpdateComponent, testBadDecodeResponse)
     constexpr std::array<uint8_t, hdrSize> cancelUpdateComponentResponse{
         0x00, 0x00, 0x00};
     auto responseMsg =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(cancelUpdateComponentResponse.data());
 
     auto rc = decode_cancel_update_component_resp(
@@ -3629,6 +3729,7 @@ TEST(CancelUpdate, goodPathEncodeRequest)
 {
     constexpr uint8_t instanceId = 10;
     std::array<uint8_t, hdrSize> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc = encode_cancel_update_req(instanceId, requestMsg,
@@ -3642,6 +3743,7 @@ TEST(CancelUpdate, goodPathEncodeRequest)
 TEST(CancelUpdate, errorPathEncodeRequest)
 {
     std::array<uint8_t, hdrSize + sizeof(uint8_t)> request{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto requestMsg = reinterpret_cast<pldm_msg*>(request.data());
 
     auto rc =
@@ -3660,6 +3762,7 @@ TEST(CancelUpdate, goodPathDecodeResponse)
         cancelUpdateResponse1{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(cancelUpdateResponse1.data());
     uint8_t completionCode = 0;
     bool8_t nonFunctioningComponentIndication = 0;
@@ -3679,6 +3782,7 @@ TEST(CancelUpdate, goodPathDecodeResponse)
         cancelUpdateResponse2{0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,
                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(cancelUpdateResponse2.data());
     rc = decode_cancel_update_resp(
         responseMsg2, cancelUpdateResponse2.size() - hdrSize, &completionCode,
@@ -3693,6 +3797,7 @@ TEST(CancelUpdate, goodPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(completionCode)>
         cancelUpdateResponse3{0x00, 0x00, 0x00, 0x86};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(cancelUpdateResponse3.data());
     rc = decode_cancel_update_resp(
         responseMsg3, cancelUpdateResponse3.size() - hdrSize, &completionCode,
@@ -3706,6 +3811,7 @@ TEST(CancelUpdate, errorPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize> cancelUpdateResponse1{0x00, 0x00,
                                                                  0x00};
     auto responseMsg1 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(cancelUpdateResponse1.data());
     uint8_t completionCode = 0;
     bool8_t nonFunctioningComponentIndication = 0;
@@ -3739,6 +3845,7 @@ TEST(CancelUpdate, errorPathDecodeResponse)
     constexpr std::array<uint8_t, hdrSize + sizeof(completionCode)>
         cancelUpdateResponse2{0x00, 0x00, 0x00, 0x00};
     auto responseMsg2 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(cancelUpdateResponse2.data());
     rc = decode_cancel_update_resp(
         responseMsg2, cancelUpdateResponse2.size() - hdrSize, &completionCode,
@@ -3749,6 +3856,7 @@ TEST(CancelUpdate, errorPathDecodeResponse)
         cancelUpdateResponse3{0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00,
                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     auto responseMsg3 =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const pldm_msg*>(cancelUpdateResponse3.data());
     rc = decode_cancel_update_resp(
         responseMsg3, cancelUpdateResponse3.size() - hdrSize, &completionCode,

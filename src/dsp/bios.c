@@ -210,7 +210,7 @@ int decode_set_date_time_resp(const struct pldm_msg *msg, size_t payload_length,
 	return PLDM_SUCCESS;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 int encode_get_bios_table_resp(uint8_t instance_id, uint8_t completion_code,
 			       uint32_t next_transfer_handle,
 			       uint8_t transfer_flag, uint8_t *table_data,
@@ -426,7 +426,7 @@ int decode_get_bios_attribute_current_value_by_handle_req(
 	return PLDM_SUCCESS;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 int encode_get_bios_current_value_by_handle_resp(uint8_t instance_id,
 						 uint8_t completion_code,
 						 uint32_t next_transfer_handle,
@@ -474,10 +474,16 @@ int encode_set_bios_attribute_current_value_req(
 	if (msg == NULL || attribute_data == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
-	if (PLDM_SET_BIOS_ATTR_CURR_VAL_MIN_REQ_BYTES + attribute_length !=
-	    payload_length) {
+
+	if (payload_length < PLDM_SET_BIOS_ATTR_CURR_VAL_MIN_REQ_BYTES) {
 		return PLDM_ERROR_INVALID_LENGTH;
 	}
+
+	if (payload_length - PLDM_SET_BIOS_ATTR_CURR_VAL_MIN_REQ_BYTES <
+	    attribute_length) {
+		return PLDM_ERROR_INVALID_LENGTH;
+	}
+
 	struct pldm_header_info header = { 0 };
 	header.instance = instance_id;
 	header.msg_type = PLDM_REQUEST;
@@ -590,8 +596,15 @@ int encode_set_bios_table_req(uint8_t instance_id, uint32_t transfer_handle,
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
-	if (PLDM_SET_BIOS_TABLE_MIN_REQ_BYTES + table_length !=
-	    payload_length) {
+	if (payload_length < PLDM_SET_BIOS_TABLE_MIN_REQ_BYTES) {
+		return PLDM_ERROR_INVALID_LENGTH;
+	}
+
+	if (payload_length - PLDM_SET_BIOS_TABLE_MIN_REQ_BYTES < table_length) {
+		return PLDM_ERROR_INVALID_LENGTH;
+	}
+
+	if (payload_length - PLDM_SET_BIOS_TABLE_MIN_REQ_BYTES > table_length) {
 		return PLDM_ERROR_INVALID_LENGTH;
 	}
 

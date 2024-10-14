@@ -71,6 +71,11 @@ int pldm_bios_table_string_entry_encode(void *entry, size_t entry_length,
 	POINTER_CHECK(str);
 	size_t length = pldm_bios_table_string_entry_encode_length(str_length);
 	BUFFER_SIZE_EXPECT(entry_length, length);
+	if (entry_length - (sizeof(struct pldm_bios_string_table_entry) -
+			    MEMBER_SIZE(pldm_bios_string_table_entry, name)) <
+	    str_length) {
+		return PLDM_ERROR_INVALID_LENGTH;
+	}
 	struct pldm_bios_string_table_entry *string_entry = entry;
 	uint16_t handle;
 	int rc = get_bios_string_handle(&handle);
@@ -193,7 +198,7 @@ size_t pldm_bios_table_attr_entry_enum_encode_length(uint8_t pv_num,
 	       def_num;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 int pldm_bios_table_attr_entry_enum_encode(
 	void *entry, size_t entry_length,
 	const struct pldm_bios_table_attr_entry_enum_info *info)
@@ -243,7 +248,7 @@ int pldm_bios_table_attr_entry_enum_decode_pv_num(
 	return PLDM_SUCCESS;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 int pldm_bios_table_attr_entry_enum_decode_def_num(
 	const struct pldm_bios_attr_table_entry *entry, uint8_t *def_num)
 {
@@ -276,7 +281,7 @@ int pldm_bios_table_attr_entry_enum_decode_pv_hdls(
 	return PLDM_SUCCESS;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 uint8_t pldm_bios_table_attr_entry_enum_decode_def_indices(
 	const struct pldm_bios_attr_table_entry *entry, uint8_t *def_indices,
 	uint8_t def_num)
@@ -694,22 +699,23 @@ int pldm_bios_table_attr_value_entry_encode_enum(
 	void *entry, size_t entry_length, uint16_t attr_handle,
 	uint8_t attr_type, uint8_t count, const uint8_t *handles)
 {
+	struct pldm_bios_attr_val_table_entry *table_entry;
+
 	POINTER_CHECK(entry);
 	POINTER_CHECK(handles);
 	if (count != 0 && handles == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
 	ATTR_TYPE_EXPECT(attr_type, PLDM_BIOS_ENUMERATION);
-	size_t length =
-		pldm_bios_table_attr_value_entry_encode_enum_length(count);
-	BUFFER_SIZE_EXPECT(entry_length, length);
-	struct pldm_bios_attr_val_table_entry *table_entry = entry;
+	BUFFER_SIZE_EXPECT(entry_length, sizeof(*table_entry));
+	table_entry = entry;
 	table_entry->attr_handle = htole16(attr_handle);
 	table_entry->attr_type = attr_type;
 	table_entry->value[0] = count;
-	if (count != 0) {
-		memcpy(&table_entry->value[1], handles, count);
+	if (entry_length - sizeof(*table_entry) < count) {
+		return PLDM_ERROR_INVALID_LENGTH;
 	}
+	memcpy(&table_entry->value[1], handles, count);
 	return PLDM_SUCCESS;
 }
 
@@ -758,21 +764,23 @@ int pldm_bios_table_attr_value_entry_encode_string(
 	void *entry, size_t entry_length, uint16_t attr_handle,
 	uint8_t attr_type, uint16_t str_length, const char *str)
 {
+	struct pldm_bios_attr_val_table_entry *table_entry;
+
 	POINTER_CHECK(entry);
 	if (str_length != 0 && str == NULL) {
 		return PLDM_ERROR_INVALID_DATA;
 	}
 	ATTR_TYPE_EXPECT(attr_type, PLDM_BIOS_STRING);
-	size_t length = pldm_bios_table_attr_value_entry_encode_string_length(
-		str_length);
-	BUFFER_SIZE_EXPECT(entry_length, length);
-	struct pldm_bios_attr_val_table_entry *table_entry = entry;
+	BUFFER_SIZE_EXPECT(entry_length,
+			   (sizeof(*table_entry) - 1 + sizeof(str_length)));
+	table_entry = entry;
 	table_entry->attr_handle = htole16(attr_handle);
 	table_entry->attr_type = attr_type;
-	if (str_length != 0) {
-		memcpy(table_entry->value + sizeof(str_length), str,
-		       str_length);
+	if (entry_length - (sizeof(*table_entry) - 1 + sizeof(str_length)) <
+	    str_length) {
+		return PLDM_ERROR_INVALID_LENGTH;
 	}
+	memcpy(table_entry->value + sizeof(str_length), str, str_length);
 	str_length = htole16(str_length);
 	memcpy(table_entry->value, &str_length, sizeof(str_length));
 	return PLDM_SUCCESS;
@@ -887,7 +895,7 @@ uint16_t pldm_bios_table_attr_value_entry_decode_handle(
 
 static size_t pad_size_get(size_t size_without_pad)
 {
-	return ((size_without_pad % 4) ? (4 - size_without_pad % 4) : 0);
+	return (4 - (size_without_pad % 4)) % 4;
 }
 
 static uint8_t *pad_append(uint8_t *table_end, size_t pad_size)
@@ -910,9 +918,7 @@ static uint8_t *checksum_append(uint8_t *table_end, uint32_t checksum)
 LIBPLDM_ABI_STABLE
 size_t pldm_bios_table_pad_checksum_size(size_t size_without_pad)
 {
-	size_t size = pad_size_get(size_without_pad) +
-		      sizeof(uint32_t) /*sizeof(checksum)*/;
-	return size;
+	return pad_size_get(size_without_pad) + sizeof(uint32_t);
 }
 
 LIBPLDM_ABI_STABLE
@@ -924,11 +930,19 @@ int pldm_bios_table_append_pad_checksum(void *table, size_t capacity,
 	}
 
 	size_t pad_checksum_size = pldm_bios_table_pad_checksum_size(*size);
+
+	if (SIZE_MAX - pad_checksum_size < *size) {
+		return PLDM_ERROR_INVALID_LENGTH;
+	}
+
 	size_t total_length = *size + pad_checksum_size;
 	if (capacity < total_length) {
 		return PLDM_ERROR_INVALID_LENGTH;
 	}
 
+	if (UINTPTR_MAX - *size < (uintptr_t)table) {
+		return PLDM_ERROR_INVALID_LENGTH;
+	}
 	uint8_t *table_end = (uint8_t *)table + *size;
 	size_t pad_size = pad_size_get(*size);
 	table_end = pad_append(table_end, pad_size);
@@ -947,7 +961,7 @@ struct pldm_bios_table_iter {
 	ssize_t (*entry_length_handler)(const void *table_entry);
 };
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 struct pldm_bios_table_iter *
 pldm_bios_table_iter_create(const void *table, size_t length,
 			    enum pldm_bios_table_types type)
@@ -983,10 +997,18 @@ void pldm_bios_table_iter_free(struct pldm_bios_table_iter *iter)
 }
 
 #define pad_and_check_max 7
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 bool pldm_bios_table_iter_is_end(const struct pldm_bios_table_iter *iter)
 {
 	ssize_t len;
+
+	if (!iter) {
+		return true;
+	}
+
+	if (iter->current_pos > iter->table_len) {
+		return true;
+	}
 
 	if (iter->table_len - iter->current_pos <= pad_and_check_max) {
 		return true;
@@ -1059,7 +1081,7 @@ static bool string_table_handle_equal(const void *entry, const void *key)
 	return false;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 const struct pldm_bios_string_table_entry *
 pldm_bios_table_string_find_by_handle(const void *table, size_t length,
 				      uint16_t handle)
@@ -1089,7 +1111,7 @@ static bool string_table_string_equal(const void *entry, const void *key)
 	return true;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 const struct pldm_bios_string_table_entry *
 pldm_bios_table_string_find_by_string(const void *table, size_t length,
 				      const char *str)
@@ -1109,7 +1131,7 @@ static bool attr_table_handle_equal(const void *entry, const void *key)
 	       handle;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 const struct pldm_bios_attr_table_entry *
 pldm_bios_table_attr_find_by_handle(const void *table, size_t length,
 				    uint16_t handle)
@@ -1126,7 +1148,7 @@ static bool attr_table_string_handle_equal(const void *entry, const void *key)
 	return pldm_bios_table_attr_entry_decode_string_handle(entry) == handle;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 const struct pldm_bios_attr_table_entry *
 pldm_bios_table_attr_find_by_string_handle(const void *table, size_t length,
 					   uint16_t handle)
@@ -1142,7 +1164,7 @@ static bool attr_value_table_handle_equal(const void *entry, const void *key)
 	return pldm_bios_table_attr_value_entry_decode_handle(entry) == handle;
 }
 
-LIBPLDM_ABI_STABLE
+LIBPLDM_ABI_DEPRECATED_UNSAFE
 const struct pldm_bios_attr_val_table_entry *
 pldm_bios_table_attr_value_find_by_handle(const void *table, size_t length,
 					  uint16_t handle)

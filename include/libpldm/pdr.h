@@ -79,9 +79,6 @@ uint32_t pldm_pdr_get_repo_size(const pldm_pdr *repo);
 int pldm_pdr_add(pldm_pdr *repo, const uint8_t *data, uint32_t size,
 		 bool is_remote, uint16_t terminus_handle,
 		 uint32_t *record_handle);
-int pldm_pdr_add_check(pldm_pdr *repo, const uint8_t *data, uint32_t size,
-		       bool is_remote, uint16_t terminus_handle,
-		       uint32_t *record_handle);
 
 /** @brief Get record handle of a PDR record
  *
@@ -263,11 +260,6 @@ int pldm_pdr_add_fru_record_set(pldm_pdr *repo, uint16_t terminus_handle,
 				uint16_t entity_instance_num,
 				uint16_t container_id,
 				uint32_t *bmc_record_handle);
-int pldm_pdr_add_fru_record_set_check(pldm_pdr *repo, uint16_t terminus_handle,
-				      uint16_t fru_rsi, uint16_t entity_type,
-				      uint16_t entity_instance_num,
-				      uint16_t container_id,
-				      uint32_t *bmc_record_handle);
 
 /** @brief Find a FRU record set PDR by FRU record set identifier
  *
@@ -459,9 +451,6 @@ bool pldm_entity_is_exist_parent(pldm_entity_node *node);
 int pldm_entity_association_pdr_add(pldm_entity_association_tree *tree,
 				    pldm_pdr *repo, bool is_remote,
 				    uint16_t terminus_handle);
-int pldm_entity_association_pdr_add_check(pldm_entity_association_tree *tree,
-					  pldm_pdr *repo, bool is_remote,
-					  uint16_t terminus_handle);
 
 /** @brief Add a contained entity as a remote PDR to an existing entity association PDR.
  *
@@ -509,9 +498,6 @@ int pldm_entity_association_pdr_create_new(pldm_pdr *repo,
  *  @return 0 on success, -EINVAL if the provided arguments are invalid.
  */
 int pldm_entity_association_pdr_add_from_node(
-	pldm_entity_node *node, pldm_pdr *repo, pldm_entity **entities,
-	size_t num_entities, bool is_remote, uint16_t terminus_handle);
-int pldm_entity_association_pdr_add_from_node_check(
 	pldm_entity_node *node, pldm_pdr *repo, pldm_entity **entities,
 	size_t num_entities, bool is_remote, uint16_t terminus_handle);
 
@@ -608,6 +594,19 @@ void pldm_entity_association_tree_copy_root(
 	pldm_entity_association_tree *org_tree,
 	pldm_entity_association_tree *new_tree);
 
+/** @brief Create a copy of an existing entity association tree
+ *
+ *  @param[in] org_tree - pointer to source tree
+ *  @param[in/out] new_tree - pointer to destination tree
+ *
+ *  @return 0 if the entity association tree was copied, -EINVAL if the argument
+ *          values are invalid, or -ENOMEM if memory required for the copy
+ *          cannot be allocated.
+ */
+int pldm_entity_association_tree_copy_root_check(
+	pldm_entity_association_tree *org_tree,
+	pldm_entity_association_tree *new_tree);
+
 /** @brief Destroy all the nodes of the entity association tree
  *
  *  @param[in] tree - pointer to entity association tree
@@ -639,6 +638,37 @@ bool pldm_is_empty_entity_assoc_tree(pldm_entity_association_tree *tree);
 void pldm_entity_association_pdr_extract(const uint8_t *pdr, uint16_t pdr_len,
 					 size_t *num_entities,
 					 pldm_entity **entities);
+
+/** @brief Remove a contained entity from an entity association PDR
+ *
+ *  @param[in] repo - opaque pointer acting as a PDR repo handle
+ *  @param[in] entity - the pldm entity to be deleted. Data inside the entity struct must be
+ *  			host-endianess format
+ *  @param[in] is_remote - indicates which PDR to remove, local or remote
+ *  @param[in-out] pdr_record_handle - record handle of the container entity which has to be removed.
+ *                                     PLDM will use this record handle to updated the PDR repo so
+ *                                     that entry corresponding to this entity is removed from PDR
+ *                                     table.
+ *
+ *  @return 0 on success, -EINVAL if the arguments are invalid, -ENOMEM if an internal memory
+ *  allocation fails, or -EOVERFLOW if given data is too large for memory allocated
+ */
+int pldm_entity_association_pdr_remove_contained_entity(
+	pldm_pdr *repo, pldm_entity *entity, bool is_remote,
+	uint32_t *pdr_record_handle);
+
+/** @brief removes a PLDM PDR record if it matches given record set identifier
+ *  @param[in] repo - opaque pointer acting as a PDR repo handle
+ *  @param[in] fru_rsi - FRU record set identifier
+ *  @param[in] is_remote - indicates which PDR to remove, local or remote
+ *  @param[out] record_handle - record handle of the fru record to be removed
+ *
+ *  @return 0 on success, -EINVAL if the arguments are invalid or -EOVERFLOW if value is too
+ *  large for defined type
+ */
+int pldm_pdr_remove_fru_record_set_by_rsi(pldm_pdr *repo, uint16_t fru_rsi,
+					  bool is_remote,
+					  uint32_t *record_handle);
 
 #ifdef __cplusplus
 }
